@@ -11,6 +11,8 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "jquery": "^3.2.1",
+    "jquery-weui": "^1.2.0",
     "vant": "^0.12.3",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
