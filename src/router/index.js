@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import HelloWorld from '@/pages/HelloWorld'
-import PageActivity from '@/pages/Activity'
+import PageActivityEdit from '@/pages/ActivityEdit'
+import PageActivityView from '@/pages/ActivityView'
 import PageActivityJqweui from '@/pages/ActivityJqweui'
 
 Vue.use(Router)
@@ -12,9 +13,13 @@ export default new Router({
     name: 'HelloWorld',
     component: HelloWorld
   }, {
-    path: '/activity',
-    name: 'PageActivity',
-    component: PageActivity
+    path: '/activity_edit',
+    name: 'PageActivityEdit',
+    component: PageActivityEdit
+  }, {
+    path: '/activity_view',
+    name: 'PageActivityView',
+    component: PageActivityView
   }, {
     path: '/activityJqweui',
     name: 'PageActivityJqweui',
