@@ -1,41 +1,43 @@
 <template>
   <div>
+    <van-row>
+      <van-col span="24" align="center">
+        <br/>活动信息
+      </van-col>
+    </van-row>
     <van-cell-group>
-      <van-field v-model="username" label="组织者" icon="clear" placeholder="显示的组织者名称" required @click-icon="username = ''" />
-      <van-field id='datetime-picker' v-model="activityTime" label="活动时间" icon="clear" placeholder="活动时间" required />
-      <van-field v-model="activityAddress" label="活动地点" icon="clear" placeholder="活动地点" required />
-      <van-field v-model="enrollPrice" label="费用(元)" placeholder="请输入费用" type='number' />
-      <van-cell title="人数上限" />
-      <div align="center">
-        <van-stepper v-model="maxEnrollCount" />
-      </div>
-      <van-cell title="人数下限" value='小于该人数活动自动取消' />
-      <div align="center">
-        <van-stepper v-model="minEnrollCount" />
-      </div>
-      <van-cell title="将于活动前多少天确认，确认后所付钱款转给组织者。参与者将不能退费。" />
-      <div align="center">
-        <van-stepper v-model="confirmDaysBeforeActivity" />
-      </div>
+      <van-field v-model="founderNickName" label="组织者" icon="clear" placeholder="显示的组织者名称" required @click-icon="founderNickName=''" v-on:click="initialActivityFounderNickName" :error="!!$vuelidation.error('founderNickName')" />
+      <van-field v-model="activityTitle" label="活动名称" icon="clear" placeholder="活动名称" required @click-icon="activityTitle=''" :error="!!$vuelidation.error('activityTitle')" />
+      <van-field v-model="activityDateTime" label="活动时间" readonly placeholder="活动时间" required type="datetime" :error="!!$vuelidation.error('activityDateTime')" v-on:click="showDatatimePicker" />
+      <van-datetime-picker v-if='isShowDatatimePicker' @cancel='cancelDatatime' @confirm='chooseDatatime' v-model="activityDateTime" type="datetime" :min-date="minDate" :max-date="maxDate" />
+      <van-field v-model="activityAddress" label="活动地点" icon="clear" placeholder="活动地点" required @click-icon="activityAddress=''" :error="!!$vuelidation.error('activityAddress')" />
+      <van-field v-model="enrollPrice" label="费用（元）" placeholder="请输入费用" type='number' />
+      <van-cell title="人数上限">
+        <van-stepper v-model="numberMax" align="center" />
+      </van-cell>
+      <van-cell title="人数下限">
+        <van-stepper v-model="numberMin" align="center" />
+      </van-cell>
+      <van-cell title="确认天数">
+        <van-stepper v-model="confirmDayCount" align="center" />
+      </van-cell>
     </van-cell-group>
     <van-row>
       <van-col span="12">
-        <van-button bottom-action>确认</van-button>
+        <van-button bottom-action v-on:click="confirmActivity">确认</van-button>
       </van-col>
       <van-col span="12">
-        <van-button type="primary" bottom-action v-on:click="toPageView">预览</van-button>
+        <van-button type="primary" bottom-action v-on:click="confirmActivity('view')">确认并预览</van-button>
       </van-col>
     </van-row>
-    <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
- -->
   </div>
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Stepper, Cell, CellGroup, Button, Row, Col } from 'vant'
-import $ from 'jquery'
-import weui from 'jquery-weui/dist/js/jquery-weui.min'
+import { Field, Stepper, Cell, CellGroup, Button, Row, Col, DatetimePicker } from 'vant'
 import wx from 'weixin-js-sdk'
+import Vuelidation from 'vuelidation';
+Vue.use(Vuelidation);
 export default {
   components: {
     [Stepper.name]: Stepper,
@@ -45,49 +47,96 @@ export default {
     [Row.name]: Row,
     [Col.name]: Col,
     [CellGroup.name]: CellGroup,
+    [DatetimePicker.name]: DatetimePicker,
   },
   name: 'PageActivityEdit',
   data() {
     return {
+      founderNickName: '',
+      activityTitle: '',
+      activityAddress: '',
+      activityDateTime: new Date(),
+      numberMax: 100,
+      numberMin: 1,
+      confirmDayCount: 2,
       enrollPrice: 0,
-      minHour: 10,
-      maxHour: 20,
       minDate: new Date(),
-      maxDate: new Date(2019, 10, 1),
-      currentDate: new Date(2018, 1, 1)
+      maxDate: new Date(2022, 10, 1),
+      isShowDatatimePicker: false,
     }
+  },
+  vuelidation: {
+    data: {
+      founderNickName: {
+        required: true,
+      },
+      activityTitle: {
+        required: true,
+      },
+      activityDateTime: {
+        required: true,
+      },
+      activityAddress: {
+        required: true,
+      },
+    },
   },
   methods: {
+    chooseDatatime: function(v) {
+      this.isShowDatatimePicker = false
+    },
+    cancelDatatime: function(v) {
+      this.isShowDatatimePicker = false
+    },
+    showDatatimePicker: function() {
+      this.isShowDatatimePicker = true
+    },
+    initialActivityFounderNickName: function() {
+      if (this.founderNickName == '' && global.ACTIVITYINFO.WECHATUSER.nickname && global.ACTIVITYINFO.WECHATUSER.nickname.length > 0) {
+        this.founderNickName = global.ACTIVITYINFO.WECHATUSER.nickname
+      }
+    },
+    confirmActivity: function(act) {
+      if (this.$vuelidation.valid()) {
+        var app = this;
+        console.log(this)
+        this.$ajax({
+            method: 'post',
+            url: 'ajax/createActivity',
+            data: this._data,
+          })
+          .then(function(response) {
+            console.log(response);
+            var rev = response.data
+            if (act == 'view') {
+              app.$router.push({ name: 'PageActivityView', query: { activity_id: rev.activityId, } })
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
+    },
+    testWechatConfig: function() {
+      wx.checkJsApi({
+        jsApiList: ['chooseImage'],
+        success: function(res) {
+          alert('wx.checkJsApi ok!', arguments)
+          console.log('global.ACTIVITYINFO', global.ACTIVITYINFO)
+        }
+      });
+    },
     toPageView: function() {
       this.$router.push({ name: 'PageActivityView', query: { routeParams: 'params', } })
-
     }
   },
-  mounted() {
-    /*
-    wx.ready(function() {
-      console.log('wx.ready')
-    });
-    wx.checkJsApi({
-      jsApiList: ['chooseImage'],
-      success: function(res) {
-        console.log(arguments)
-      }
-    });
-    */
-    $("#datetime-picker").datetimePicker({
-      title: '活动时间',
-      min: "1990-12-12",
-      max: "2022-12-12 12:12",
-      onChange: function(picker, values, displayValues) {
-        console.log(values);
-      }
-    });
-  }
+  computed: {},
+  mounted() {}
 }
 
 </script>
 <style>
-@import 'jquery-weui/dist/css/jquery-weui.min.css'
+/*@import 'jquery-weui/dist/css/jquery-weui.min.css'
+*/
 
 </style>

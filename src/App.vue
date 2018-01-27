@@ -5,18 +5,14 @@
 </template>
 <script>
 import wx from 'weixin-js-sdk'
-import $ from 'jquery'
-console.log('App wx', wx)
 export default {
   name: 'App',
-  mounted() {
-    $.ajax({
-      url: "https://www.dushujielong.com/nodeDev/ajaxPub/signWechat",
-      type: "get",
-      contentType: "application/json",
-      success: function(result) {
-        var rev = JSON.parse(result);
-        console.log('rev', rev)
+  mounted() {},
+  created() {
+    this.$ajax.get("ajaxPub/signWechat")
+      .then(function(response) {
+        var rev = response.data
+        global.ACTIVITYINFO.WECHATUSER = rev.wechatUserInfo
         wx.config({
           debug: rev.debug,
           appId: rev.appId,
@@ -28,16 +24,13 @@ export default {
         wx.ready(function() {
           wx.checkJsApi({
             jsApiList: ['chooseImage'],
-            success: function(res) {
-              console.log('wx.checkJsApi', arguments)
-            }
+            success: function(res) {}
           });
         });
-      },
-      error: function(xhr, status) {
-        alert(JSON.stringify(status));
-      },
-    });
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
   }
 }
 

@@ -1,22 +1,9 @@
 <template>
   <div>
     <van-cell-group>
-      <van-field v-model="username" label="组织者" icon="clear" placeholder="显示的组织者名称" required @click-icon="username = ''" />
-      <van-field id='datetime-picker' v-model="activityTime" label="活动时间" icon="clear" placeholder="活动时间" required />
-      <van-field v-model="activityAddress" label="活动地点" icon="clear" placeholder="活动地点" required />
-      <van-field v-model="enrollPrice" label="费用(元)" placeholder="请输入费用" type='number' />
-      <van-cell title="人数上限" />
-      <div align="center">
-        <van-stepper v-model="maxEnrollCount" />
-      </div>
-      <van-cell title="人数下限" value='小于该人数活动自动取消' />
-      <div align="center">
-        <van-stepper v-model="minEnrollCount" />
-      </div>
-      <van-cell title="将于活动前多少天确认，确认后所付钱款转给组织者。参与者将不能退费。" />
-      <div align="center">
-        <van-stepper v-model="confirmDaysBeforeActivity" />
-      </div>
+      <van-cell title="活动名称" :value="activityTitle" />
+      <van-cell title="活动时间" :value="activityDateTime" />
+      <van-cell title="活动地点" :value="activityAddress" />
     </van-cell-group>
     <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
@@ -25,12 +12,10 @@
 <script>
 import Vue from 'vue'
 import { Field, Stepper, Cell, CellGroup } from 'vant'
-import $ from 'jquery'
-import weui from 'jquery-weui/dist/js/jquery-weui.min'
+import { Loading, LoadingPlugin } from 'vux'
+Vue.use(LoadingPlugin)
 
-Vue.use(Field)
-Vue.use(Stepper)
-// Vue.use(DatetimePicker)
+
 
 export default {
   components: {
@@ -38,32 +23,43 @@ export default {
     [Field.name]: Field,
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
+    Loading,
   },
-  name: 'PageActivity',
+  name: 'PageActivityView',
   data() {
     return {
-      enrollPrice: 0,
-      minHour: 10,
-      maxHour: 20,
-      minDate: new Date(),
-      maxDate: new Date(2019, 10, 1),
-      currentDate: new Date(2018, 1, 1)
+      activityDateTime: '',
+      activityTitle: '',
+      activityAddress: '',
     }
   },
   mounted() {
-    $("#datetime-picker").datetimePicker({
-      title: '出发时间',
-      min: "1990-12-12",
-      max: "2022-12-12 12:12",
-      onChange: function(picker, values, displayValues) {
-        console.log(values);
-      }
-    });
-  }
+
+  },
+  created() {
+    this.$vux.loading.show({
+      text: 'Loading'
+    })
+    if (this.$route.query.activity_id) {
+      var app = this
+      this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
+        .then(function(response) {
+          console.log('ajax/getActivity?\n', response)
+          var rev = response.data
+          app.activityDateTime = rev.data.activityDateTime
+          app.activityTitle = rev.data.activityTitle
+          app.activityAddress = rev.data.activityAddress
+          app.$vux.loading.hide()
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    }
+  },
 }
 
 </script>
 <style>
-@import 'jquery-weui/dist/css/jquery-weui.min.css'
+
 
 </style>
