@@ -9,9 +9,11 @@ export default {
   name: 'App',
   mounted() {},
   created() {
+    console.log('App.vue created')
     this.$ajax.get("ajaxPub/signWechat")
       .then(function(response) {
         var rev = response.data
+        console.log(rev)
         global.ACTIVITYINFO.WECHATUSER = rev.wechatUserInfo
         wx.config({
           debug: rev.debug,

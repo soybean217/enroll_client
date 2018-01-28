@@ -30,6 +30,14 @@
         <van-button type="primary" bottom-action v-on:click="confirmActivity('view')">确认并预览</van-button>
       </van-col>
     </van-row>
+    <van-row>
+      <van-col span="12">
+        <van-button bottom-action v-on:click="testWechatConfig">测试</van-button>
+      </van-col>
+      <van-col span="12">
+        <van-button type="primary" bottom-action>空</van-button>
+      </van-col>
+    </van-row>
   </div>
 </template>
 <script>
