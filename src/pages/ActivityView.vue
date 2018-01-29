@@ -15,17 +15,27 @@
     </van-cell-group>
     <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
+    <div v-transfer-dom>
+      <confirm v-model="show5" show-input ref="confirm5" title="显示的昵称" @on-confirm="onConfirm5" @on-show="onShow5">
+      </confirm>
+    </div>
+    <div v-transfer-dom>
+      <alert v-model="showQrcodeAlert" title="扫描二维码完成报名" @on-show="onShow"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
+    </div>
   </div>
 </template>
 <script>
 import Vue from 'vue'
 import { Field, Stepper, Cell, CellGroup, Button } from 'vant'
-import { Loading, LoadingPlugin } from 'vux'
+import { Loading, LoadingPlugin, Confirm, Alert, TransferDomDirective as TransferDom } from 'vux'
 Vue.use(LoadingPlugin)
 
 
 
 export default {
+  directives: {
+    TransferDom
+  },
   components: {
     [Stepper.name]: Stepper,
     [Field.name]: Field,
@@ -33,12 +43,16 @@ export default {
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
     Loading,
+    Confirm,
+    Alert,
   },
   name: 'PageActivityView',
   data() {
     return {
       isEnrolled: false,
       isFounder: false,
+      show5: false,
+      showQrcodeAlert: false,
       enrollButtonText: '已报名',
       activityInfo: {
         activityDateTime: '',
@@ -51,21 +65,49 @@ export default {
     procHeadImg: function(imgUrl) {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
     },
+    onShow5() {
+      this.$refs.confirm5.setInputValue(global.ACTIVITYINFO.WECHATUSER.nickname)
+    },
+    onConfirm5(value) {
+      this.$ajax({
+          method: 'post',
+          url: 'ajax/enrollActivity',
+          data: {
+            activityId: this.$route.query.activity_id,
+            displayNickName: value,
+          },
+        })
+        .then(function(response) {
+          console.log(response);
+          var rev = response.data
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    },
     enroll: function() {
-      if (global.CONFIG.FORCE_SUBSCRIBE) {
-        if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
-          this.$ajax.get("ajax/enrollActivity?act=enroll")
-            .then(function(response) {
-              console.log('ajax/enrollActivity?\n', response)
-              var rev = response.data
-            })
-            .catch(function(error) {
-              console.log(error);
-            });
-        }
-
+      if (false) {
+        // if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
+        this.show5 = true;
       } else {
-
+        var app = this
+        this.$ajax({
+            method: 'post',
+            url: 'ajax/enrollQrcode',
+            data: {
+              activityId: this.$route.query.activity_id,
+              from: global.getUrlParam('f'),
+            },
+          })
+          .then(function(response) {
+            console.log(response);
+            var rev = response.data
+            app.qrcodeSrc = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + encodeURI(rev.ticket)
+            app.showQrcodeAlert = true
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
       }
     },
     checkEnrolled: function() {

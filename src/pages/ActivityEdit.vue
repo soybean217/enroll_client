@@ -21,6 +21,9 @@
       <van-cell title="确认天数">
         <van-stepper v-model="confirmDayCount" align="center" />
       </van-cell>
+      <van-cell title="开启确认">
+        <van-switch v-model="activityConfirmSwitch" />
+      </van-cell>
     </van-cell-group>
     <van-row>
       <van-col span="12">
@@ -42,7 +45,7 @@
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Stepper, Cell, CellGroup, Button, Row, Col, DatetimePicker } from 'vant'
+import { Field, Stepper, Cell, CellGroup, Button, Row, Col, DatetimePicker, Switch } from 'vant'
 import wx from 'weixin-js-sdk'
 import Vuelidation from 'vuelidation';
 Vue.use(Vuelidation);
@@ -56,6 +59,7 @@ export default {
     [Col.name]: Col,
     [CellGroup.name]: CellGroup,
     [DatetimePicker.name]: DatetimePicker,
+    [Switch.name]: Switch,
   },
   name: 'PageActivityEdit',
   data() {
@@ -71,6 +75,7 @@ export default {
       minDate: new Date(),
       maxDate: new Date(2022, 10, 1),
       isShowDatatimePicker: false,
+      activityConfirmSwitch: false,
     }
   },
   vuelidation: {
