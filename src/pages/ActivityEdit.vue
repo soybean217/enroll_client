@@ -21,6 +21,9 @@
       <van-cell title="确认天数">
         <van-stepper v-model="confirmDayCount" align="center" />
       </van-cell>
+      <van-cell title="可否代报名">
+        <van-switch v-model="enrollAgentSwitch" />
+      </van-cell>
       <van-cell title="开启确认">
         <van-switch v-model="activityConfirmSwitch" />
       </van-cell>
@@ -76,6 +79,7 @@ export default {
       maxDate: new Date(2022, 10, 1),
       isShowDatatimePicker: false,
       activityConfirmSwitch: false,
+      enrollAgentSwitch: false,
     }
   },
   vuelidation: {

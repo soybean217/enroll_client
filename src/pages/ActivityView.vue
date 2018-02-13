@@ -16,11 +16,15 @@
     <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
     <div v-transfer-dom>
-      <confirm v-model="show5" show-input ref="confirm5" title="显示的昵称" @on-confirm="onConfirm5" @on-show="onShow5">
+      <confirm v-model="showNickName" show-input ref="confirmNickName" title="显示的昵称" @on-confirm="onConfirmNickName" @on-show="onShowNickName">
       </confirm>
     </div>
     <div v-transfer-dom>
-      <alert v-model="showQrcodeAlert" title="扫描二维码完成报名" @on-show="onShow"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
+      <confirm v-model="showEnrollNumber" show-input :input-attrs="{type: 'number'}" ref="confirmEnrollNumber" title="报名人数" @on-confirm="onConfirmEnrollNumber" @on-show="onShowEnrollNumber">
+      </confirm>
+    </div>
+    <div v-transfer-dom>
+      <alert v-model="showQrcodeAlert" title="扫描二维码完成报名" @on-confirm="freshPage"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
     </div>
   </div>
 </template>
@@ -28,6 +32,7 @@
 import Vue from 'vue'
 import { Field, Stepper, Cell, CellGroup, Button } from 'vant'
 import { Loading, LoadingPlugin, Confirm, Alert, TransferDomDirective as TransferDom } from 'vux'
+import wx from 'weixin-js-sdk'
 Vue.use(LoadingPlugin)
 
 
@@ -51,44 +56,96 @@ export default {
     return {
       isEnrolled: false,
       isFounder: false,
-      show5: false,
+      showNickName: false,
       showQrcodeAlert: false,
       enrollButtonText: '已报名',
       activityInfo: {
         activityDateTime: '',
         activityTitle: '',
         activityAddress: '',
-      }
+      },
+      enrollNickName: '',
+      enrollNumber: 1,
+      lastFetchTime: Date.now(),
+      qrcodeSrc: '',
     }
   },
   methods: {
     procHeadImg: function(imgUrl) {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
     },
-    onShow5() {
-      this.$refs.confirm5.setInputValue(global.ACTIVITYINFO.WECHATUSER.nickname)
+    onShowNickName() {
+      this.$refs.confirmNickName.setInputValue(global.ACTIVITYINFO.WECHATUSER.nickname)
     },
-    onConfirm5(value) {
+    onShowEnrollNumber() {
+      this.$refs.confirmEnrollNumber.setInputValue(1)
+    },
+    enrollActivity() {
+      var app = this
       this.$ajax({
           method: 'post',
           url: 'ajax/enrollActivity',
           data: {
             activityId: this.$route.query.activity_id,
-            displayNickName: value,
+            displayNickName: this.enrollNickName,
+            enrollNumber: this.enrollNumber,
           },
         })
         .then(function(response) {
           console.log(response);
           var rev = response.data
+          if (rev.type == 'unifiedOrder') {
+            wx.checkJsApi({
+              jsApiList: ['chooseWXPay'],
+              success: function(res) {
+                var unifiedOrderData = rev.data
+                unifiedOrderData.success = function(res) {
+                  // alert(JSON.stringify(res));
+                  //{"errMsg":"chooseWXPay:ok"}
+                  if (res.errMsg == "chooseWXPay:ok") {
+                    alert('支付成功');
+                  } else {
+                    alert(JSON.stringify(res))
+                  }
+                }
+                unifiedOrderData.success = function(res) {
+                  // alert(JSON.stringify(res));
+                  //{"errMsg":"chooseWXPay:ok"}
+                  if (res.errMsg == "chooseWXPay:ok") {
+                    alert('支付成功');
+                    app.freshPage()
+                  } else {
+                    alert(JSON.stringify(res))
+                  }
+                }
+                console.log('unifiedOrderData', unifiedOrderData)
+                wx.chooseWXPay(unifiedOrderData)
+              }
+            });
+          }
         })
         .catch(function(error) {
           console.log(error);
         });
     },
+    onConfirmNickName(value) {
+      this.enrollNickName = value
+      if (this.activityInfo.enrollAgentSwitch) {
+        this.showNickName = false;
+        this.showEnrollNumber = true;
+      } else {
+        this.enrollActivity()
+      }
+
+    },
+    onConfirmEnrollNumber(value) {
+      this.enrollNumber = value
+      this.enrollActivity()
+    },
     enroll: function() {
-      if (false) {
-        // if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
-        this.show5 = true;
+      // if (false) {
+      if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
+        this.showNickName = true;
       } else {
         var app = this
         this.$ajax({
@@ -111,9 +168,7 @@ export default {
       }
     },
     checkEnrolled: function() {
-      console.log('console.log(global.ACTIVITYINFO.WECHATUSER)', global.ACTIVITYINFO.WECHATUSER)
       for (var i in this.activityInfo.applys) {
-        console.log('i', i)
         if (global.ACTIVITYINFO.WECHATUSER.unionid == this.activityInfo.applys[i].unionId) {
           return true
         }
@@ -130,28 +185,37 @@ export default {
         console.log('mounted this.isEnrolled', this.isEnrolled)
         this.$vux.loading.hide()
       } else {
-        setTimeout(this.checkGlobalPara(), 500)
+        if (Date.now() - this.lastFetchTime > 30000) {
+          window.location.href = global.updateUrl(window.location.href)
+        } else {
+          setTimeout(this.checkGlobalPara(), 500)
+        }
       }
-    }
+    },
+    freshPage: function() {
+      this.$vux.loading.show({
+        text: 'Loading'
+      })
+      if (this.$route.query.activity_id) {
+        var app = this
+        this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
+          .then(function(response) {
+            var rev = response.data
+            console.log('ajax/getActivity?\n', rev)
+            app.activityInfo = rev.data
+            app.checkGlobalPara()
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
+    },
   },
-  mounted() {},
+  mounted() {
+    console.log(window.location.href)
+  },
   beforeMount() {
-    this.$vux.loading.show({
-      text: 'Loading'
-    })
-    if (this.$route.query.activity_id) {
-      var app = this
-      this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
-        .then(function(response) {
-          console.log('ajax/getActivity?\n', response)
-          var rev = response.data
-          app.activityInfo = rev.data
-          app.checkGlobalPara()
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
-    }
+    this.freshPage()
   },
 }
 
