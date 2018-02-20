@@ -1,9 +1,9 @@
 <template>
   <div>
     <van-cell-group>
+      <van-cell title="活动时间" :value="activityInfo.activityDateTime" />
       <van-cell title="活动名称" :value="activityInfo.activityTitle" />
       <van-cell title="组织者" :value="activityInfo.founderNickName" />
-      <van-cell title="活动时间" :value="activityInfo.activityDateTime" />
       <van-cell title="活动地点" :value="activityInfo.activityAddress" />
       <van-cell title="确认天数" :value="activityInfo.confirmDayCount" />
       <van-cell title="活动费用" :value="activityInfo.enrollPrice?activityInfo.enrollPrice+'元/人':'免费'" />
@@ -24,7 +24,7 @@
       </confirm>
     </div>
     <div v-transfer-dom>
-      <alert v-model="showQrcodeAlert" title="扫描二维码完成报名" @on-confirm="freshPage"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
+      <alert v-model="showQrcodeAlert" :title="qrcodeTitle" @on-confirm="freshPage"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
     </div>
   </div>
 </template>
@@ -68,6 +68,7 @@ export default {
       enrollNumber: 1,
       lastFetchTime: Date.now(),
       qrcodeSrc: '',
+      qrcodeTitle: '扫描二维码报名'
     }
   },
   methods: {
@@ -143,8 +144,8 @@ export default {
       this.enrollActivity()
     },
     enroll: function() {
-      // if (false) {
-      if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
+      if (false) {
+        // if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
         this.showNickName = true;
       } else {
         var app = this
@@ -203,6 +204,7 @@ export default {
             var rev = response.data
             console.log('ajax/getActivity?\n', rev)
             app.activityInfo = rev.data
+            app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
             app.checkGlobalPara()
           })
           .catch(function(error) {

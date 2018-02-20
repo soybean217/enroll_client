@@ -14,6 +14,9 @@ export default {
       .then(function(response) {
         var rev = response.data
         console.log(rev)
+        if (!rev.wechatUserInfo) {
+          alert('please check session.wechatUserInfo')
+        }
         global.ACTIVITYINFO.WECHATUSER = rev.wechatUserInfo
         wx.config({
           debug: rev.debug,
