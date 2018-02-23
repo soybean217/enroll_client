@@ -8,6 +8,7 @@
       <van-cell title="确认天数" :value="activityInfo.confirmDayCount" />
       <van-cell title="活动费用" :value="activityInfo.enrollPrice?activityInfo.enrollPrice+'元/人':'免费'" />
       <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
+      <van-button size="large" type="warn" v-on:click="manageApply" v-if="checkIsFounder()">{{manageButtonText}}</van-button>
       <van-cell title="已报名人数" :value="activityInfo.applys.length+'/'+activityInfo.numberMax" />
       <div>
         <img v-for="item in activityInfo.applys" :src="procHeadImg(item.headimgurl)" />
@@ -59,6 +60,7 @@ export default {
       showNickName: false,
       showQrcodeAlert: false,
       enrollButtonText: '已报名',
+      manageButtonText: '管理报名',
       activityInfo: {
         activityDateTime: '',
         activityTitle: '',
@@ -143,9 +145,12 @@ export default {
       this.enrollNumber = value
       this.enrollActivity()
     },
+    manageApply: function() {
+      this.$router.push({ name: 'PageApplysManage', query: { activity_id: this.activityInfo._id, } })
+    },
     enroll: function() {
-      if (false) {
-        // if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
+      // if (false) {
+      if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
         this.showNickName = true;
       } else {
         var app = this
@@ -173,6 +178,12 @@ export default {
         if (global.ACTIVITYINFO.WECHATUSER.unionid == this.activityInfo.applys[i].unionId) {
           return true
         }
+      }
+      return false
+    },
+    checkIsFounder: function() {
+      if (global.ACTIVITYINFO.WECHATUSER.unionid == this.activityInfo.founderUnionId) {
+        return true
       }
       return false
     },

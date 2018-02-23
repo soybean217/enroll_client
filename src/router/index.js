@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import HelloWorld from '@/pages/HelloWorld'
 import PageActivityEdit from '@/pages/ActivityEdit'
 import PageActivityView from '@/pages/ActivityView'
+import PageApplysManage from '@/pages/ApplysManage'
 
 Vue.use(Router)
 
@@ -19,5 +20,9 @@ export default new Router({
     path: '/activity_view',
     name: 'PageActivityView',
     component: PageActivityView
+  }, {
+    path: '/applys_manage',
+    name: 'PageApplysManage',
+    component: PageApplysManage
   }, ]
 })

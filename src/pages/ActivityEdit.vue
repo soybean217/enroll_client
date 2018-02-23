@@ -24,8 +24,11 @@
       <van-cell title="可否代报名">
         <van-switch v-model="enrollAgentSwitch" />
       </van-cell>
-      <van-cell title="开启确认">
+      <van-cell title="确认开关">
         <van-switch v-model="activityConfirmSwitch" />
+      </van-cell>
+      <van-cell title="替补开关">
+        <van-switch v-model="alternateSwitch" />
       </van-cell>
     </van-cell-group>
     <van-row>
@@ -44,15 +47,22 @@
         <van-button type="primary" bottom-action>空</van-button>
       </van-col>
     </van-row>
+    <div v-transfer-dom>
+      <alert v-model="enrollPriceAlert" title="费用必须为免费或者大于1元" @on-confirm=""></alert>
+    </div>
   </div>
 </template>
 <script>
 import Vue from 'vue'
 import { Field, Stepper, Cell, CellGroup, Button, Row, Col, DatetimePicker, Switch } from 'vant'
+import { Alert, TransferDomDirective as TransferDom } from 'vux'
 import wx from 'weixin-js-sdk'
 import Vuelidation from 'vuelidation';
 Vue.use(Vuelidation);
 export default {
+  directives: {
+    TransferDom
+  },
   components: {
     [Stepper.name]: Stepper,
     [Field.name]: Field,
@@ -63,6 +73,7 @@ export default {
     [CellGroup.name]: CellGroup,
     [DatetimePicker.name]: DatetimePicker,
     [Switch.name]: Switch,
+    Alert,
   },
   name: 'PageActivityEdit',
   data() {
@@ -80,6 +91,8 @@ export default {
       isShowDatatimePicker: false,
       activityConfirmSwitch: false,
       enrollAgentSwitch: false,
+      alternateSwitch: false,
+      enrollPriceAlert: false,
     }
   },
   vuelidation: {
@@ -114,24 +127,28 @@ export default {
       }
     },
     confirmActivity: function(act) {
-      if (this.$vuelidation.valid()) {
-        var app = this;
-        console.log(this)
-        this.$ajax({
-            method: 'post',
-            url: 'ajax/createActivity',
-            data: this._data,
-          })
-          .then(function(response) {
-            console.log(response);
-            var rev = response.data
-            if (act == 'view') {
-              app.$router.push({ name: 'PageActivityView', query: { activity_id: rev.activityId, } })
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          });
+      if (this.enrollPrice == 0 || this.enrollPrice >= 1) {
+        if (this.$vuelidation.valid()) {
+          var app = this;
+          console.log(this)
+          this.$ajax({
+              method: 'post',
+              url: 'ajax/createActivity',
+              data: this._data,
+            })
+            .then(function(response) {
+              console.log(response);
+              var rev = response.data
+              if (act == 'view') {
+                app.$router.push({ name: 'PageActivityView', query: { activity_id: rev.activityId, } })
+              }
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        }
+      } else {
+        this.enrollPriceAlert = true
       }
     },
     testWechatConfig: function() {
