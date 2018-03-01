@@ -5,7 +5,7 @@
       <van-cell title="活动名称" :value="activityInfo.activityTitle" />
       <van-cell title="组织者" :value="activityInfo.founderNickName" />
       <van-cell title="活动地点" :value="activityInfo.activityAddress" />
-      <van-cell title="确认天数" :value="activityInfo.confirmDayCount" />
+      <van-cell v-if='activityInfo.enrollPrice>0' title="确认天数" :value="activityInfo.confirmDayCount" />
       <van-cell title="活动费用" :value="activityInfo.enrollPrice?activityInfo.enrollPrice+'元/人':'免费'" />
       <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
       <van-button size="large" type="warn" v-on:click="manageApply" v-if="checkIsFounder()">{{manageButtonText}}</van-button>
@@ -125,6 +125,8 @@ export default {
                 wx.chooseWXPay(unifiedOrderData)
               }
             });
+          } else if (rev.status = 'ok') {
+            app.freshPage()
           }
         })
         .catch(function(error) {
