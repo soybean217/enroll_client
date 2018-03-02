@@ -92,7 +92,28 @@ export default {
             if (response.data.status != 'ok') {
               alert('please retry or report , page will refresh because of :' + JSON.stringify(response.data));
             }
-            app.freshPage()
+            if (response.data.type && response.data.type == 'unifiedOrder') {
+              wx.checkJsApi({
+                jsApiList: ['chooseWXPay'],
+                success: function(res) {
+                  var unifiedOrderData = response.data.data
+                  unifiedOrderData.success = function(res) {
+                    // alert(JSON.stringify(res));
+                    //{"errMsg":"chooseWXPay:ok"}
+                    if (res.errMsg == "chooseWXPay:ok") {
+                      alert('支付成功');
+                      app.freshPage()
+                    } else {
+                      alert(JSON.stringify(res))
+                    }
+                  }
+                  console.log('unifiedOrderData', unifiedOrderData)
+                  wx.chooseWXPay(unifiedOrderData)
+                }
+              });
+            } else {
+              app.freshPage()
+            }
           })
           .catch(function(error) {
             console.log(error);

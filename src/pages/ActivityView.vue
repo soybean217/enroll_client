@@ -107,15 +107,6 @@ export default {
                   //{"errMsg":"chooseWXPay:ok"}
                   if (res.errMsg == "chooseWXPay:ok") {
                     alert('支付成功');
-                  } else {
-                    alert(JSON.stringify(res))
-                  }
-                }
-                unifiedOrderData.success = function(res) {
-                  // alert(JSON.stringify(res));
-                  //{"errMsg":"chooseWXPay:ok"}
-                  if (res.errMsg == "chooseWXPay:ok") {
-                    alert('支付成功');
                     app.freshPage()
                   } else {
                     alert(JSON.stringify(res))
