@@ -56,7 +56,7 @@ export default {
   data() {
     return {
       isEnrolled: false,
-      isFounder: false,
+      showEnrollNumber: false,
       showNickName: false,
       showQrcodeAlert: false,
       enrollButtonText: '已报名',

@@ -132,14 +132,18 @@ export default {
     select(apply) {
       this.selectedApply = apply
       if (apply.unionId != global.ACTIVITYINFO.WECHATUSER.unionid) {
+        var delTitle = '删除'
+        if (apply.payToFounderStatus == 'payed') {
+          delTitle += '(需退费' + apply.payToFounderAmount / 100 + '元)'
+        }
         if (apply.status == 'wait') {
           this.menuContent = {
             confirm: '确认',
-            del: '删除'
+            del: delTitle
           }
         } else {
           this.menuContent = {
-            del: '删除'
+            del: delTitle
           }
         }
         this.showMenu = true
