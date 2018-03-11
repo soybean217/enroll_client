@@ -10,12 +10,31 @@ export default {
   mounted() {},
   created() {
     console.log('App.vue created')
-    this.$ajax.get("ajaxPub/signWechat")
+    var app = this
+    console.log(location)
+    app.$ajax.get("ajaxPub/signWechat")
       .then(function(response) {
         var rev = response.data
         console.log(rev)
         if (!rev.wechatUserInfo) {
-          alert('please check session.wechatUserInfo')
+          app.$ajax({
+              method: 'post',
+              url: 'ajhrefRecord',
+              data: {
+                href: location.href,
+              },
+            })
+            .then(function(response) {
+              console.log(response.data)
+              if (response.data.status = 'ok') {
+                location = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + rev.appId + '&redirect_uri=' + response.data.loginUrl + '&response_type=code&scope=snsapi_base&state=' + response.data.state + '#wechat_redirect'
+              } else {
+                alert('error when get state')
+              }
+            }).catch(function(error) {
+              alert('error when get state')
+              console.log(error);
+            });
         }
         global.ACTIVITYINFO.WECHATUSER = rev.wechatUserInfo
         wx.config({

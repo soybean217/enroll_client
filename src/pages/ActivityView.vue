@@ -8,6 +8,7 @@
       <van-cell v-if='activityInfo.enrollPrice>0' title="确认天数" :value="activityInfo.confirmDayCount" />
       <van-cell title="活动费用" :value="activityInfo.enrollPrice?activityInfo.enrollPrice+'元/人':'免费'" />
       <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
+      <van-button size="large" type="primary" v-on:click="cancelEnroll" v-if="checkCanCancel()">取消报名</van-button>
       <van-button size="large" type="warn" v-on:click="manageApply" v-if="checkIsFounder()">{{manageButtonText}}</van-button>
       <van-cell title="已报名人数" :value="activityInfo.applys.length+'/'+activityInfo.numberMax" />
       <div>
@@ -164,6 +165,34 @@ export default {
           .catch(function(error) {
             console.log(error);
           });
+      }
+    },
+    cancelEnroll: function() {
+      // if (false) {
+      var app = this
+      this.$ajax({
+          method: 'post',
+          url: 'ajax/cancelEnrollByCustomer',
+          data: {
+            activityId: this.$route.query.cancelEnrollByCustomer,
+          },
+        })
+        .then(function(response) {
+          console.log(response.data);
+          var rev = response.data
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    },
+    checkCanCancel: function() {
+      if (this.checkIsFounder()) {
+        return false
+      }
+      if (this.checkEnrolled()) {
+        return true
+      } else {
+        return false
       }
     },
     checkEnrolled: function() {
