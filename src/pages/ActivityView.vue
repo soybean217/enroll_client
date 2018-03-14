@@ -174,12 +174,17 @@ export default {
           method: 'post',
           url: 'ajax/cancelEnrollByCustomer',
           data: {
-            activityId: this.$route.query.cancelEnrollByCustomer,
+            activityId: this.$route.query.activity_id,
           },
         })
         .then(function(response) {
-          console.log(response.data);
+          console.log('cancelEnroll rsp:', response.data);
           var rev = response.data
+          if (rev.status == 'ok') {
+            setTimeout(app.freshPage(), 1000)
+          } else {
+            alert(rev.msg)
+          }
         })
         .catch(function(error) {
           console.log(error);
@@ -246,9 +251,7 @@ export default {
       }
     },
   },
-  mounted() {
-    console.log(window.location.href)
-  },
+  mounted() {},
   beforeMount() {
     this.freshPage()
   },
