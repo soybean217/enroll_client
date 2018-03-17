@@ -8,8 +8,8 @@
       <van-cell v-if='activityInfo.enrollPrice>0' title="确认天数" :value="activityInfo.confirmDayCount" />
       <van-cell title="活动费用" :value="activityInfo.enrollPrice?activityInfo.enrollPrice+'元/人':'免费'" />
       <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
-      <van-button size="large" type="primary" v-on:click="cancelEnroll" v-if="checkCanCancel()">取消报名</van-button>
-      <van-button size="large" type="warn" v-on:click="manageApply" v-if="checkIsFounder()">{{manageButtonText}}</van-button>
+      <van-button size="large" type="primary" v-on:click="cancelEnroll" v-if="canCancel">取消报名</van-button>
+      <van-button size="large" type="warn" v-on:click="manageApply" v-if="isFounder">{{manageButtonText}}</van-button>
       <van-cell title="已报名人数" :value="activityInfo.applys.length+'/'+activityInfo.numberMax" />
       <div>
         <img v-for="item in activityInfo.applys" :src="procHeadImg(item.headimgurl)" />
@@ -57,6 +57,8 @@ export default {
   data() {
     return {
       isEnrolled: false,
+      canCancel: false,
+      isFounder: false,
       showEnrollNumber: false,
       showNickName: false,
       showQrcodeAlert: false,
@@ -243,6 +245,8 @@ export default {
             console.log('ajax/getActivity?\n', rev)
             app.activityInfo = rev.data
             app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
+            app.isFounder = app.checkIsFounder()
+            app.canCancel = app.checkCanCancel()
             app.checkGlobalPara()
           })
           .catch(function(error) {

@@ -59,7 +59,7 @@ export default {
             url: 'ajax/confirmApply',
             data: {
               activity_id: this.$route.query.activity_id,
-              apply: this.selectedApply,
+              applyId: this.selectedApply._id,
             },
           })
           .then(function(response) {
