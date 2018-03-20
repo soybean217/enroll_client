@@ -223,6 +223,8 @@ export default {
         if (!this.isEnrolled) {
           this.enrollButtonText = '报名'
         }
+        this.isFounder = this.checkIsFounder()
+        this.canCancel = this.checkCanCancel()
         console.log('mounted this.isEnrolled', this.isEnrolled)
         this.$vux.loading.hide()
       } else {
@@ -245,8 +247,6 @@ export default {
             console.log('ajax/getActivity?\n', rev)
             app.activityInfo = rev.data
             app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
-            app.isFounder = app.checkIsFounder()
-            app.canCancel = app.checkCanCancel()
             app.checkGlobalPara()
           })
           .catch(function(error) {
