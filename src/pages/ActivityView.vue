@@ -62,7 +62,7 @@ export default {
       showEnrollNumber: false,
       showNickName: false,
       showQrcodeAlert: false,
-      enrollButtonText: '已报名',
+      enrollButtonText: '报名',
       manageButtonText: '管理报名',
       activityInfo: {
         activityDateTime: '',
@@ -220,9 +220,6 @@ export default {
       console.log('checkGlobalPara')
       if (global.ACTIVITYINFO.WECHATUSER) {
         this.isEnrolled = this.checkEnrolled()
-        if (!this.isEnrolled) {
-          this.enrollButtonText = '报名'
-        }
         this.isFounder = this.checkIsFounder()
         this.canCancel = this.checkCanCancel()
         console.log('mounted this.isEnrolled', this.isEnrolled)
