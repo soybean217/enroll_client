@@ -28,16 +28,18 @@
     <div v-transfer-dom>
       <alert v-model="showQrcodeAlert" :title="qrcodeTitle" @on-confirm="freshPage"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
     </div>
+    <!-- <tabbar-activity></tabbar-activity> -->
+    <!-- <tabbar-vant></tabbar-vant> -->
   </div>
 </template>
 <script>
 import Vue from 'vue'
 import { Field, Stepper, Cell, CellGroup, Button } from 'vant'
 import { Loading, LoadingPlugin, Confirm, Alert, TransferDomDirective as TransferDom } from 'vux'
+// import tabbarActivity from '../components/tabbar-activity'
+// import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
 Vue.use(LoadingPlugin)
-
-
 
 export default {
   directives: {
@@ -52,6 +54,8 @@ export default {
     Loading,
     Confirm,
     Alert,
+    // tabbarVant,
+    // tabbarActivity,
   },
   name: 'PageActivityView',
   data() {

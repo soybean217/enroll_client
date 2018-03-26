@@ -10,6 +10,24 @@ global.getUrlParam = function(name) {
   return null; //返回参数值
 }
 
+global.formatDate = function(activityDateTime) {
+  if (activityDateTime instanceof Date) {
+    return activityDateTime.getFullYear() + '年' + (activityDateTime.getMonth() + 1) + '月' + activityDateTime.getDate() + '日' + activityDateTime.getHours() + '点' + activityDateTime.getMinutes() + '分'
+  } else {
+    tmpDate = new Date(activityDateTime)
+    return tmpDate.getFullYear() + '年' + (tmpDate.getMonth() + 1) + '月' + tmpDate.getDate() + '日' + tmpDate.getHours() + '点' + tmpDate.getMinutes() + '分'
+  }
+}
+
+global.formatDateToDay = function(activityDateTime) {
+  if (activityDateTime instanceof Date) {
+    return activityDateTime.getFullYear().toString().substr(2) + '年' + (activityDateTime.getMonth() + 1) + '月' + activityDateTime.getDate() + '日'
+  } else {
+    tmpDate = new Date(activityDateTime)
+    return tmpDate.getFullYear().toString().substr(2) + '年' + (tmpDate.getMonth() + 1) + '月' + tmpDate.getDate() + '日'
+  }
+}
+
 global.updateUrl = function(url, key) {
   var key = (key || 't') + '='; //默认是"t"
   var reg = new RegExp(key + '\\d+'); //正则：t=1472286066028
