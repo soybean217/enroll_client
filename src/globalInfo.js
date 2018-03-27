@@ -27,6 +27,55 @@ global.formatDateToDay = function(activityDateTime) {
     return tmpDate.getFullYear().toString().substr(2) + '年' + (tmpDate.getMonth() + 1) + '月' + tmpDate.getDate() + '日'
   }
 }
+global.formatDateToDayAndWeek = function(activityDateTime) {
+  if (activityDateTime instanceof Date) {
+    return activityDateTime.getFullYear().toString() + '年' + (activityDateTime.getMonth() + 1) + '月' + activityDateTime.getDate() + '日' + xingqi(activityDateTime.getDay())
+  } else {
+    tmpDate = new Date(activityDateTime)
+    return tmpDate.getFullYear().toString() + '年' + (tmpDate.getMonth() + 1) + '月' + tmpDate.getDate() + '日' + xingqi(tmpDate.getDay())
+  }
+}
+global.formatTimeDuring = function(activity) {
+  var activityBeginDate = new Date(activity.activityDateTime)
+  var activityEndDate = new Date(activityBeginDate.getTime() + 1000 * 3600 * activity.spendHours)
+  return activityBeginDate.getHours() + ':' + activityBeginDate.getMinutes() + '-' + activityEndDate.getHours() + ':' + activityEndDate.getMinutes()
+}
+
+function fillZero(input, count) {
+  if (input.toString().length < count) {
+    return
+  }
+}
+
+function xingqi(intDay) {
+  var b
+  switch (intDay) {
+    case 0:
+      b = "星期日";
+      break;
+    case 1:
+      b = "星期一";
+      break;
+    case 2:
+      b = "星期二";
+      break;
+    case 3:
+      b = "星期三";
+      break;
+    case 4:
+      b = "星期四";
+      break;
+    case 5:
+      b = "星期五";
+      break;
+    case 6:
+      b = "星期六";
+      break;
+    default:
+      b = "系统错误，无法读取日期！";
+  }
+  return b
+}
 
 global.updateUrl = function(url, key) {
   var key = (key || 't') + '='; //默认是"t"

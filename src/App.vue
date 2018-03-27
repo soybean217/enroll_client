@@ -6,7 +6,7 @@
       </div>
     </keep-alive>
     <van-tabbar v-model="active">
-      <van-tabbar-item icon="home">首页</van-tabbar-item>
+      <van-tabbar-item icon="home" to="/">首页</van-tabbar-item>
       <van-tabbar-item icon="clock" to="activity_apply_list">参加</van-tabbar-item>
       <van-tabbar-item icon="edit" to="activity_found_list">发起</van-tabbar-item>
       <van-tabbar-item icon="contact">我的</van-tabbar-item>
@@ -15,15 +15,20 @@
 </template>
 <script>
 import { Tabbar, TabbarItem } from 'vant'
-import { Loading, LoadingPlugin, TransferDomDirective as TransferDom } from 'vux'
+// import { Loading, LoadingPlugin, TransferDomDirective as TransferDom } from 'vux'
 import wx from 'weixin-js-sdk'
 export default {
   components: {
     [Tabbar.name]: Tabbar,
     [TabbarItem.name]: TabbarItem,
-    Loading,
+    // Loading,
   },
   name: 'App',
+  data() {
+    return {
+      active: [],
+    }
+  },
   mounted() {},
   created() {
     console.log('App.vue created')

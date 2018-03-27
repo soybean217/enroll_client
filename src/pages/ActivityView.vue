@@ -1,45 +1,73 @@
 <template>
   <div>
     <van-cell-group>
-      <van-cell title="活动时间" :value="activityInfo.activityDateTime" />
-      <van-cell title="活动名称" :value="activityInfo.activityTitle" />
-      <van-cell title="组织者" :value="activityInfo.founderNickName" />
-      <van-cell title="活动地点" :value="activityInfo.activityAddress" />
-      <van-cell v-if='activityInfo.enrollPrice>0' title="确认天数" :value="activityInfo.confirmDayCount" />
-      <van-cell title="活动费用" :value="activityInfo.enrollPrice?activityInfo.enrollPrice+'元/人':'免费'" />
+      <van-row class='styleActivityTitle'>
+        <van-col span="12"><span class='bigTitle'>{{activityInfo.activityTitle}}</span>
+          <br><span>报名人数：{{enrollStatistics()}}</span>
+        </van-col>
+        <van-col span="12" class='styleActivityTitleRight'>
+          <van-button size="mini" type="primary">名单</van-button>
+          <van-button size="mini" type="primary">分享</van-button>
+        </van-col>
+      </van-row>
+      <van-row class='styleActivityTitle'>
+        <van-col span="24">
+          活动地点：{{activityInfo.activityAddress}}
+          <br>活动场地：{{activityInfo.activityField}}
+          <br>活动日期：{{activityDate}}
+          <br>活动时间：{{activityTime}}
+          <br>&nbsp;组&nbsp;织&nbsp;者：{{activityInfo.founderNickName}}
+          <br>活动费用：{{displayPrice()}}
+        </van-col>
+      </van-row>
+      <van-row class='styleActivityTitle'>
+        <van-col span="7">
+          活动公告：
+        </van-col>
+        <van-col span="17" v-html='displayNotice()'>
+        </van-col>
+      </van-row>
       <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
       <van-button size="large" type="primary" v-on:click="cancelEnroll" v-if="canCancel">取消报名</van-button>
       <van-button size="large" type="warn" v-on:click="manageApply" v-if="isFounder">{{manageButtonText}}</van-button>
-      <van-cell title="已报名人数" :value="activityInfo.applys.length+'/'+activityInfo.numberMax" />
-      <div>
-        <img v-for="item in activityInfo.applys" :src="procHeadImg(item.headimgurl)" />
-      </div>
+      <van-button size="large" type="danger" v-on:click="deleteActivity" v-if="isFounder">{{deleteActiviyButtonText}}</van-button>
     </van-cell-group>
     <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
-    <div v-transfer-dom>
-      <confirm v-model="showNickName" show-input ref="confirmNickName" title="显示的昵称" @on-confirm="onConfirmNickName" @on-show="onShowNickName">
+    <!-- <div v-transfer-dom>
+  <confirm v-model="showNickName" show-input ref="confirmNickName" title="显示的昵称" @on-confirm="onConfirmNickName" @on-show="onShowNickName" @on-cancel="" @on-hide="">
+  </confirm>
+</div>
+ -->
+    <!-- <div v-transfer-dom>
+      <confirm v-model="showEnrollNumber
+" show-input :input-attrs="{type: 'number'}" ref="confirmEnrollNumber" title="报名人数" @on-confirm="onConfirmEnrollNumber" @on-show="onShowEnrollNumber">
       </confirm>
-    </div>
-    <div v-transfer-dom>
-      <confirm v-model="showEnrollNumber" show-input :input-attrs="{type: 'number'}" ref="confirmEnrollNumber" title="报名人数" @on-confirm="onConfirmEnrollNumber" @on-show="onShowEnrollNumber">
-      </confirm>
-    </div>
+    </div> -->
     <div v-transfer-dom>
       <alert v-model="showQrcodeAlert" :title="qrcodeTitle" @on-confirm="freshPage"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
     </div>
+    <van-dialog v-model="showNickName" @confirm="onConfirmEnrollNickName" show-cancel-button>
+      <div class="styleDialogTitle">请输入活动伙伴认识的名字</div>
+      <van-field v-model="enrollNickName" label="显示昵称" placeholder="请输入在活动中的昵称" />
+    </van-dialog>
+    <van-dialog v-model="showEnrollNumber" @confirm="onConfirmEnrollNumber" show-cancel-button>
+      <div class="styleDialogTitle">请输入报名人数</div>
+      <van-field v-model="enrollNumber" label="报名人数" placeholder="" type='number' />
+    </van-dialog>
     <!-- <tabbar-activity></tabbar-activity> -->
     <!-- <tabbar-vant></tabbar-vant> -->
   </div>
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Stepper, Cell, CellGroup, Button } from 'vant'
-import { Loading, LoadingPlugin, Confirm, Alert, TransferDomDirective as TransferDom } from 'vux'
+import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Dialog } from 'vant'
+import { Loading, LoadingPlugin, Confirm, ConfirmPlugin, Alert, TransferDomDirective as TransferDom } from 'vux'
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
 Vue.use(LoadingPlugin)
+Vue.use(Dialog);
 
 export default {
   directives: {
@@ -47,6 +75,8 @@ export default {
   },
   components: {
     [Stepper.name]: Stepper,
+    [Row.name]: Row,
+    [Col.name]: Col,
     [Field.name]: Field,
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
@@ -68,6 +98,7 @@ export default {
       showQrcodeAlert: false,
       enrollButtonText: '报名',
       manageButtonText: '管理报名',
+      deleteActiviyButtonText: '删除活动',
       activityInfo: {
         activityDateTime: '',
         activityTitle: '',
@@ -77,10 +108,37 @@ export default {
       enrollNumber: 1,
       lastFetchTime: Date.now(),
       qrcodeSrc: '',
-      qrcodeTitle: '扫描二维码报名'
+      qrcodeTitle: '扫描二维码报名',
+      activityDate: '',
+      activityTime: '',
     }
   },
   methods: {
+    enrollStatistics() {
+      var result = 0
+      for (var apply of this.activityInfo.applys) {
+        if (apply.status == 'pass') {
+          result += apply.enrollNumber
+        }
+      }
+      return result + '/' + this.activityInfo.numberMax
+    },
+    displayPrice() {
+      if (this.activityInfo.enrollPrice > 0 && this.activityInfo.enrollPriceFemale > 0) {
+        return '男' + this.activityInfo.enrollPrice + '元，女' + this.activityInfo.enrollPriceFemale + '元'
+      } else if (this.activityInfo.enrollPrice == 0 && this.activityInfo.enrollPriceFemale == 0) {
+        return '免费'
+      }
+    },
+    displayNotice() {
+      if (this.activityInfo.activityNotice) {
+        return this.activityInfo.activityNotice.toString().replace(/\n/g, '<br>')
+      } else {
+        return ''
+      }
+
+      // return this.activityInfo.activityNotice
+    },
     procHeadImg: function(imgUrl) {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
     },
@@ -89,6 +147,32 @@ export default {
     },
     onShowEnrollNumber() {
       this.$refs.confirmEnrollNumber.setInputValue(1)
+    },
+    deleteActivity() {
+      var app = this
+      this.$ajax({
+          method: 'post',
+          url: 'ajax/delActivity',
+          data: {
+            activity_id: this.$route.query.activity_id,
+          },
+        })
+        .then(function(response) {
+          console.log(response.date);
+          var rev = response.data
+          if (rev.status == 'ok') {
+            app.$router.push({ name: 'PageActivityFoundList' })
+          } else if (rev.msg == 'please delete all other apply') {
+            alert('请先删除所有申请，')
+          } else if (rev.msg) {
+            alert(rev.msg)
+          } else {
+            alert('error data when delActivity')
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
     },
     enrollActivity() {
       var app = this
@@ -131,27 +215,26 @@ export default {
           console.log(error);
         });
     },
-    onConfirmNickName(value) {
-      this.enrollNickName = value
+    onConfirmEnrollNickName() {
       if (this.activityInfo.enrollAgentSwitch) {
         this.showNickName = false;
         this.showEnrollNumber = true;
       } else {
         this.enrollActivity()
       }
-
     },
-    onConfirmEnrollNumber(value) {
-      this.enrollNumber = value
+    onConfirmEnrollNumber() {
       this.enrollActivity()
     },
     manageApply: function() {
       this.$router.push({ name: 'PageApplysManage', query: { activity_id: this.activityInfo._id, } })
     },
-    enroll: function() {
+    enroll() {
       // if (false) {
+      console.log(global.ACTIVITYINFO.WECHATUSER)
       if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
         this.showNickName = true;
+        this.enrollNickName = global.ACTIVITYINFO.WECHATUSER.nickname
       } else {
         var app = this
         this.$ajax({
@@ -229,10 +312,10 @@ export default {
         console.log('mounted this.isEnrolled', this.isEnrolled)
         this.$vux.loading.hide()
       } else {
-        if (Date.now() - this.lastFetchTime > 30000) {
+        if (Date.now() - this.lastFetchTime > 10000) {
           window.location.href = global.updateUrl(window.location.href)
         } else {
-          setTimeout(this.checkGlobalPara(), 500)
+          setTimeout(this.checkGlobalPara(), 1000)
         }
       }
     },
@@ -246,9 +329,16 @@ export default {
           .then(function(response) {
             var rev = response.data
             console.log('ajax/getActivity?\n', rev)
-            app.activityInfo = rev.data
-            app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
-            app.checkGlobalPara()
+            if (rev.status == 'ok') {
+              app.activityInfo = rev.data
+              app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
+              app.activityDate = global.formatDateToDayAndWeek(app.activityInfo.activityDateTime)
+              app.activityTime = global.formatTimeDuring(app.activityInfo)
+              app.checkGlobalPara()
+            } else {
+              alert(rev.msg)
+              app.$router.push({ name: 'PageActivityApplyList' })
+            }
           })
           .catch(function(error) {
             console.log(error);
@@ -256,14 +346,31 @@ export default {
       }
     },
   },
-  mounted() {},
-  beforeMount() {
+  mounted() {
     this.freshPage()
   },
+  beforeMount() {},
 }
 
 </script>
 <style>
+.styleActivityTitle {
+  margin: 15px;
+  font-size: 90%;
+}
 
+.bigTitle {
+  font-size: 140%
+}
+
+.styleActivityTitleRight {
+  text-align: right;
+  margin-top: 15px;
+}
+
+.styleDialogTitle {
+  text-align: center;
+  margin: 10px
+}
 
 </style>

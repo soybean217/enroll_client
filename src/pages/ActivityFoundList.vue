@@ -65,7 +65,6 @@ export default {
     },
   },
   beforeMount() {
-    console.log('beforeMount', this.name)
     this.freshPage()
   },
 }
