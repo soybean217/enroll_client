@@ -15,21 +15,21 @@
       </van-cell>
       <van-field v-model="activityAddress" label="活动地点" icon="clear" placeholder="活动地点" required @click-icon="activityAddress=''" :error="!!$vuelidation.error('activityAddress')" />
       <van-field v-model="activityField" label="活动场地" icon="clear" placeholder="活动场地" />
-      <van-field v-model="enrollPrice" label="费用（元）" placeholder="请输入费用" type='number' />
-      <van-field v-model="enrollPriceFemale" label="女生费用" placeholder="请输入费用" type='number' />
+      <van-field v-model="enrollPrice" label="男生费用" placeholder="请输入费用(元)" type='number' />
+      <van-field v-model="enrollPriceFemale" label="女生费用" placeholder="请输入费用(元)" type='number' />
       <van-cell title="人数上限">
         <van-stepper v-model="numberMax" align="center" />
       </van-cell>
-      <van-cell title="人数下限">
-        <van-stepper v-model="numberMin" align="center" />
-      </van-cell>
+      <!-- <van-cell title="人数下限">
+  <van-stepper v-model="numberMin" align="center" />
+</van-cell>
+ -->
       <van-cell title="确认天数">
         <van-stepper v-model="confirmDayCount" align="center" />
       </van-cell>
-      <!-- <van-cell title="可否代报名">
-  <van-switch v-model="enrollAgentSwitch" />
-</van-cell>
- -->
+      <van-cell title="可否代报名">
+        <van-switch v-model="enrollAgentSwitch" />
+      </van-cell>
       <van-cell title="确认开关">
         <van-switch v-model="activityConfirmSwitch" />
       </van-cell>

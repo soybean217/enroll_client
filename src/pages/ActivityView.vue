@@ -1,5 +1,11 @@
 <template>
   <div>
+    <!-- <van-swipe :autoplay="3000" sytle="height:120px">
+      <van-swipe-item v-for="(image, index) in imageList" :key="index">
+        <img v-lazy="image" style="width:100%" />
+      </van-swipe-item>
+    </van-swipe> -->
+    <img v-lazy="imageTop" style="width:100%" />
     <van-cell-group>
       <van-row class='styleActivityTitle'>
         <van-col span="12"><span class='bigTitle'>{{activityInfo.activityTitle}}</span>
@@ -21,10 +27,10 @@
         </van-col>
       </van-row>
       <van-row class='styleActivityTitle'>
-        <van-col span="7">
+        <van-col span="8">
           活动公告：
         </van-col>
-        <van-col span="17" v-html='displayNotice()'>
+        <van-col span="16" v-html='displayNotice()'>
         </van-col>
       </van-row>
       <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
@@ -53,7 +59,8 @@
     </van-dialog>
     <van-dialog v-model="showEnrollNumber" @confirm="onConfirmEnrollNumber" show-cancel-button>
       <div class="styleDialogTitle">请输入报名人数</div>
-      <van-field v-model="enrollNumber" label="报名人数" placeholder="" type='number' />
+      <van-field v-model="enrollNumber" label="报名男生" placeholder="" type='number' />
+      <van-field v-model="enrollNumberFemale" label="报名女生" placeholder="" type='number' />
     </van-dialog>
     <!-- <tabbar-activity></tabbar-activity> -->
     <!-- <tabbar-vant></tabbar-vant> -->
@@ -61,13 +68,15 @@
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Dialog } from 'vant'
+import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog } from 'vant'
 import { Loading, LoadingPlugin, Confirm, ConfirmPlugin, Alert, TransferDomDirective as TransferDom } from 'vux'
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
 Vue.use(LoadingPlugin)
 Vue.use(Dialog);
+Vue.use(Lazyload)
+
 
 export default {
   directives: {
@@ -90,6 +99,8 @@ export default {
   name: 'PageActivityView',
   data() {
     return {
+      imageTop: 'http://pic01-1253796884.file.myqcloud.com/badminton/badminton_top_180329.jpg',
+      imageList: ['http://pic01-1253796884.file.myqcloud.com/badminton/badminton_top_180329.jpg'],
       isEnrolled: false,
       canCancel: false,
       isFounder: false,
@@ -106,6 +117,7 @@ export default {
       },
       enrollNickName: '',
       enrollNumber: 1,
+      enrollNumberFemale: 0,
       lastFetchTime: Date.now(),
       qrcodeSrc: '',
       qrcodeTitle: '扫描二维码报名',
@@ -118,7 +130,7 @@ export default {
       var result = 0
       for (var apply of this.activityInfo.applys) {
         if (apply.status == 'pass') {
-          result += apply.enrollNumber
+          result += parseInt(apply.enrollNumber + apply.enrollNumberFemale)
         }
       }
       return result + '/' + this.activityInfo.numberMax
@@ -183,6 +195,7 @@ export default {
             activityId: this.$route.query.activity_id,
             displayNickName: this.enrollNickName,
             enrollNumber: this.enrollNumber,
+            enrollNumberFemale: this.enrollNumberFemale,
           },
         })
         .then(function(response) {
@@ -218,13 +231,22 @@ export default {
     onConfirmEnrollNickName() {
       if (this.activityInfo.enrollAgentSwitch) {
         this.showNickName = false;
+        if (global.ACTIVITYINFO.WECHATUSER.sex == 2) {
+          this.enrollNumber = 0
+          this.enrollNumberFemale = 1
+        } else {
+          this.enrollNumber = 1
+          this.enrollNumberFemale = 0
+        }
         this.showEnrollNumber = true;
       } else {
         this.enrollActivity()
       }
     },
     onConfirmEnrollNumber() {
-      this.enrollActivity()
+      if (this.enrollNumber + this.enrollNumberFemale > 0) {
+        this.enrollActivity()
+      }
     },
     manageApply: function() {
       this.$router.push({ name: 'PageApplysManage', query: { activity_id: this.activityInfo._id, } })
@@ -355,8 +377,8 @@ export default {
 </script>
 <style>
 .styleActivityTitle {
-  margin: 15px;
-  font-size: 90%;
+  margin: 16px;
+  font-size: 100%;
 }
 
 .bigTitle {
@@ -365,7 +387,7 @@ export default {
 
 .styleActivityTitleRight {
   text-align: right;
-  margin-top: 15px;
+  margin-top: 16px;
 }
 
 .styleDialogTitle {

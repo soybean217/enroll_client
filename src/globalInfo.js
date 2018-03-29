@@ -38,12 +38,14 @@ global.formatDateToDayAndWeek = function(activityDateTime) {
 global.formatTimeDuring = function(activity) {
   var activityBeginDate = new Date(activity.activityDateTime)
   var activityEndDate = new Date(activityBeginDate.getTime() + 1000 * 3600 * activity.spendHours)
-  return activityBeginDate.getHours() + ':' + activityBeginDate.getMinutes() + '-' + activityEndDate.getHours() + ':' + activityEndDate.getMinutes()
+  return activityBeginDate.getHours() + ':' + fillZeroForMinute(activityBeginDate.getMinutes()) + '-' + activityEndDate.getHours() + ':' + fillZeroForMinute(activityEndDate.getMinutes())
 }
 
-function fillZero(input, count) {
-  if (input.toString().length < count) {
-    return
+function fillZeroForMinute(input) {
+  if (input.toString().length == 1) {
+    return '0' + input
+  } else {
+    return input
   }
 }
 
