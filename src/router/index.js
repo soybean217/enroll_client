@@ -6,6 +6,7 @@ import PageActivityView from '@/pages/ActivityView'
 import PageActivityFoundList from '@/pages/ActivityFoundList'
 import PageActivityApplyList from '@/pages/ActivityApplyList'
 import PageApplysManage from '@/pages/ApplysManage'
+import PageApplysList from '@/pages/ApplysList'
 
 Vue.use(Router)
 
@@ -34,5 +35,9 @@ export default new Router({
     path: '/applys_manage',
     name: 'PageApplysManage',
     component: PageApplysManage
+  }, {
+    path: '/applys_list',
+    name: 'PageApplysList',
+    component: PageApplysList
   }, ]
 })

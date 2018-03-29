@@ -12,8 +12,8 @@
           <br><span>报名人数：{{enrollStatistics()}}</span>
         </van-col>
         <van-col span="12" class='styleActivityTitleRight'>
-          <van-button size="mini" type="primary">名单</van-button>
-          <van-button size="mini" type="primary">分享</van-button>
+          <van-button size="small" v-on:click="routeToApplyList()" type="primary">名单</van-button>
+          <van-button size="small" type="primary">分享</van-button>
         </van-col>
       </van-row>
       <van-row class='styleActivityTitle'>
@@ -126,6 +126,9 @@ export default {
     }
   },
   methods: {
+    routeToApplyList() {
+      this.$router.push({ name: 'PageApplysList', query: { activity_id: this.$route.query.activity_id, } })
+    },
     enrollStatistics() {
       var result = 0
       for (var apply of this.activityInfo.applys) {
@@ -358,7 +361,7 @@ export default {
               app.activityTime = global.formatTimeDuring(app.activityInfo)
               app.checkGlobalPara()
             } else {
-              alert(rev.msg)
+              // alert(rev.msg)
               app.$router.push({ name: 'PageActivityApplyList' })
             }
           })
