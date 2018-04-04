@@ -13,23 +13,15 @@
 <script>
 import Vue from 'vue'
 import { Field, Stepper, Cell, CellGroup, Button } from 'vant'
-import { Loading, LoadingPlugin, Confirm, Alert, TransferDomDirective as TransferDom } from 'vux'
 import wx from 'weixin-js-sdk'
-Vue.use(LoadingPlugin)
 
 export default {
-  directives: {
-    TransferDom
-  },
   components: {
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
-    Loading,
-    Confirm,
-    Alert,
   },
-  name: 'PageActivityView',
+  name: 'PageApplysList',
   data() {
     return {
       selectedApply: {},
@@ -59,9 +51,6 @@ export default {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
     },
     freshPage: function() {
-      this.$vux.loading.show({
-        text: 'Loading'
-      })
       if (this.$route.query.activity_id) {
         var app = this
         this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
@@ -76,7 +65,6 @@ export default {
                 seq += (apply.enrollNumber + apply.enrollNumberFemale)
               }
             }
-            app.$vux.loading.hide()
           })
           .catch(function(error) {
             console.log(error);

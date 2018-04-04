@@ -50,9 +50,10 @@
 " show-input :input-attrs="{type: 'number'}" ref="confirmEnrollNumber" title="报名人数" @on-confirm="onConfirmEnrollNumber" @on-show="onShowEnrollNumber">
       </confirm>
     </div> -->
-    <div v-transfer-dom>
-      <alert v-model="showQrcodeAlert" :title="qrcodeTitle" @on-confirm="freshPage"><img height="200px" width="200px" :src='qrcodeSrc' /></alert>
-    </div>
+    <van-dialog v-model="showQrcodeAlert" @confirm="freshPage">
+      <div class="styleDialogTitle">{{qrcodeTitle}}</div>
+      <img height="200px" width="200px" :src='qrcodeSrc' />
+    </van-dialog>
     <van-dialog v-model="showNickName" @confirm="onConfirmEnrollNickName" show-cancel-button>
       <div class="styleDialogTitle">请输入活动伙伴认识的名字</div>
       <van-field v-model="enrollNickName" label="显示昵称" placeholder="请输入在活动中的昵称" />
@@ -69,19 +70,14 @@
 <script>
 import Vue from 'vue'
 import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog } from 'vant'
-import { Loading, LoadingPlugin, Confirm, ConfirmPlugin, Alert, TransferDomDirective as TransferDom } from 'vux'
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
-Vue.use(LoadingPlugin)
 Vue.use(Dialog);
 Vue.use(Lazyload)
 
 
 export default {
-  directives: {
-    TransferDom
-  },
   components: {
     [Stepper.name]: Stepper,
     [Row.name]: Row,
@@ -90,9 +86,6 @@ export default {
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
-    Loading,
-    Confirm,
-    Alert,
     // tabbarVant,
     // tabbarActivity,
   },
@@ -156,12 +149,6 @@ export default {
     },
     procHeadImg: function(imgUrl) {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
-    },
-    onShowNickName() {
-      this.$refs.confirmNickName.setInputValue(global.ACTIVITYINFO.WECHATUSER.nickname)
-    },
-    onShowEnrollNumber() {
-      this.$refs.confirmEnrollNumber.setInputValue(1)
     },
     deleteActivity() {
       var app = this
@@ -345,9 +332,6 @@ export default {
       }
     },
     freshPage: function() {
-      this.$vux.loading.show({
-        text: 'Loading'
-      })
       if (this.$route.query.activity_id) {
         var app = this
         this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
@@ -381,11 +365,11 @@ export default {
 <style>
 .styleActivityTitle {
   margin: 16px;
-  font-size: 100%;
+  font-size: 14px;
 }
 
 .bigTitle {
-  font-size: 140%
+  font-size: 16px
 }
 
 .styleActivityTitleRight {

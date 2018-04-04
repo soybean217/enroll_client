@@ -15,6 +15,7 @@
 </template>
 <script>
 import { Tabbar, TabbarItem } from 'vant'
+import './globalInfo'
 // import { Loading, LoadingPlugin, TransferDomDirective as TransferDom } from 'vux'
 
 export default {
@@ -26,7 +27,7 @@ export default {
   name: 'App',
   data() {
     return {
-      active: [],
+      active: -1,
     }
   },
   mounted() {},
@@ -55,6 +56,7 @@ body,
 
     overflow-y: auto;
     overflow-x: hidden;
+    font-size: 16px;
   }
 }
 

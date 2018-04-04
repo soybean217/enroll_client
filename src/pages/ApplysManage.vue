@@ -1,35 +1,28 @@
 <template>
   <div>
     <van-cell-group>
-      <van-cell v-for="apply in activityInfo.applys" :title="apply.displayNickName" v-on:click="select(apply)" :value="actText(apply)" :key="apply" />
+      <van-cell v-for="apply in activityInfo.applys" :title="apply.displayNickName" v-on:click="select(apply)" :value="actText(apply)" :key="apply._id" />
     </van-cell-group>
-    <actionsheet v-model="showMenu" :menus="menuContent" theme="android" @on-click-menu="click">
-    </actionsheet>
+    <!-- <actionsheet v-model="showMenu" :menus="menuContent" theme="android" @on-click-menu="click">
+    </actionsheet> -->
+    <van-actionsheet v-model="showMenu" :actions="actions" />
     <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
   </div>
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Stepper, Cell, CellGroup, Button } from 'vant'
-import { Loading, LoadingPlugin, Confirm, Alert, Actionsheet, TransferDomDirective as TransferDom } from 'vux'
+import { Field, Stepper, Cell, CellGroup, Button, Actionsheet } from 'vant'
 import wx from 'weixin-js-sdk'
-Vue.use(LoadingPlugin)
 
 export default {
-  directives: {
-    TransferDom
-  },
   components: {
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
-    Loading,
-    Confirm,
-    Alert,
-    Actionsheet,
+    [Actionsheet.name]: Actionsheet,
   },
-  name: 'PageActivityView',
+  name: 'PageApplysManage',
   data() {
     return {
       selectedApply: {},
@@ -39,20 +32,24 @@ export default {
         activityTitle: '',
         activityAddress: '',
       },
-      menuContent: {
-        menu1: '北京烤鸭',
-        menu2: '陕西油泼面',
-        menu3: '西安肉夹馍'
-      },
+      actions: [{
+          name: '选项',
+          callback: this.onClick
+        },
+        {
+          name: '选项',
+          subname: '描述信息'
+        },
+        {
+          name: '选项',
+          loading: true
+        }
+      ]
     }
   },
   methods: {
-    click(key) {
-      console.log(key)
-      if (key == 'confirm') {
-        this.$vux.loading.show({
-          text: 'Loading'
-        })
+    click(item) {
+      if (item.name == '确认') {
         var app = this
         this.$ajax({
             method: 'post',
@@ -63,7 +60,6 @@ export default {
             },
           })
           .then(function(response) {
-            app.$vux.loading.hide()
             console.log(response.data);
             if (response.data.status != 'ok') {
               alert('please retry or report , page will refresh because of :' + JSON.stringify(response.data));
@@ -73,10 +69,7 @@ export default {
           .catch(function(error) {
             console.log(error);
           })
-      } else if (key == 'del') {
-        this.$vux.loading.show({
-          text: 'Loading'
-        })
+      } else if (item.name == '删除') {
         var app = this
         this.$ajax({
             method: 'post',
@@ -87,7 +80,6 @@ export default {
             },
           })
           .then(function(response) {
-            app.$vux.loading.hide()
             console.log(response.data);
             if (response.data.status != 'ok') {
               alert('please retry or report , page will refresh because of :' + JSON.stringify(response.data));
@@ -133,18 +125,27 @@ export default {
       this.selectedApply = apply
       if (apply.unionId != global.ACTIVITYINFO.WECHATUSER.unionid) {
         var delTitle = '删除'
+        var subTitle = ''
         if (apply.payToFounderStatus == 'payed') {
-          delTitle += '(需退费' + apply.payToFounderAmount / 100 + '元)'
+          subTitle += '(需退费' + apply.payToFounderAmount / 100 + '元)'
         }
         if (apply.status == 'wait') {
-          this.menuContent = {
-            confirm: '确认',
-            del: delTitle
-          }
+          this.actions = [{
+              name: '确认',
+              callback: this.clickTest
+            },
+            {
+              name: delTitle,
+              subname: subTitle,
+              callback: this.click
+            }
+          ]
         } else {
-          this.menuContent = {
-            del: delTitle
-          }
+          this.actions = [{
+            name: delTitle,
+            subname: subTitle,
+            callback: this.click
+          }]
         }
         this.showMenu = true
       }
@@ -153,9 +154,7 @@ export default {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
     },
     freshPage: function() {
-      this.$vux.loading.show({
-        text: 'Loading'
-      })
+      this.showMenu = false
       if (this.$route.query.activity_id) {
         var app = this
         this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
@@ -163,7 +162,6 @@ export default {
             var rev = response.data
             console.log('ajax/getActivity?\n', rev)
             app.activityInfo = rev.data
-            app.$vux.loading.hide()
           })
           .catch(function(error) {
             console.log(error);
