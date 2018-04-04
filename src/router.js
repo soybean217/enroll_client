@@ -91,13 +91,55 @@ routes.forEach(route => {
 
 const router = new Router({ routes });
 
+// router.afterEach((to, from) => {
+//   console.log('router.afterEach', location)
+//   console.log('router.afterEach', to.fullPath)
+
+// })
+
+
 router.beforeEach((to, from, next) => {
-  const title = to.meta && to.meta.title;
-  if (title) {
-    document.title = title;
+  function defaultProcessForWechat() {
+    const title = to.meta && to.meta.title;
+    if (title) {
+      document.title = title;
+    }
+    wx.checkJsApi({
+      jsApiList: ['chooseImage', 'onMenuShareTimeline', 'onMenuShareAppMessage'],
+      success: function(res) {
+        console.log('router.beforeEach', location.href.split('#')[0] + '#' + to.fullPath, )
+
+        function shareData(act) {
+          // title: '微信JS-SDK Demo',
+          // desc: '读书接龙',
+          // link: 'https://demo.open.weixin.qq.com/jssdk/',
+          // imgUrl: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRt8Qia4lv7k3M9J1SKqKCImxJCt7j9rHYicKDI45jRPBxdzdyREWnk0ia0N5TMnMfth7SdxtzMvVgXg/0'
+          return { // title: 'title', // 分享标题
+            desc: '精彩活动', // 分享描述
+            link: location.href.split('#')[0] + '#' + to.fullPath,
+            // imgUrl: imgUrl, // 分享图标
+            success: function() {
+              // logAction(act, 'success');
+              // 用户确认分享后执行的回调函数
+            },
+            cancel: function() {
+              // logAction(act, 'cancel');
+              // 用户取消分享后执行的回调函数
+            }
+          }
+        };
+        wx.onMenuShareTimeline(shareData('onMenuShareTimeline'));
+        wx.onMenuShareAppMessage(shareData('onMenuShareAppMessage'));
+        wx.onMenuShareQQ(shareData('onMenuShareQQ'));
+        wx.onMenuShareWeibo(shareData('onMenuShareWeibo'));
+        wx.onMenuShareQZone(shareData('onMenuShareQZone'));
+        next()
+      }
+    });
   }
+
   if (global.ACTIVITYINFO.WECHATUSER) {
-    next()
+    defaultProcessForWechat()
   } else {
     axios.get("ajaxPub/signWechat")
       .then(function(response) {
@@ -134,14 +176,7 @@ router.beforeEach((to, from, next) => {
           signature: rev.signature,
           jsApiList: ["checkJsApi", "onMenuShareTimeline", "onMenuShareAppMessage", "onMenuShareQQ", "onMenuShareWeibo", "onMenuShareQZone", "hideMenuItems", "showMenuItems", "hideAllNonBaseMenuItem", "showAllNonBaseMenuItem", "translateVoice", "startRecord", "stopRecord", "onVoiceRecordEnd", "playVoice", "onVoicePlayEnd", "pauseVoice", "stopVoice", "uploadVoice", "downloadVoice", "chooseImage", "previewImage", "uploadImage", "downloadImage", "getNetworkType", "openLocation", "getLocation", "hideOptionMenu", "showOptionMenu", "closeWindow", "scanQRCode", "chooseWXPay", "openProductSpecificView", "addCard", "chooseCard", "openCard"]
         })
-        wx.ready(function() {
-          wx.checkJsApi({
-            jsApiList: ['chooseImage'],
-            success: function(res) {
-              next()
-            }
-          });
-        });
+        wx.ready(defaultProcessForWechat);
       })
       .catch(function(error) {
         console.log(error);

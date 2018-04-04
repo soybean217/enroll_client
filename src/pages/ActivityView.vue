@@ -315,22 +315,18 @@ export default {
       }
       return false
     },
-    checkGlobalPara: function() {
-      console.log('checkGlobalPara')
-      if (global.ACTIVITYINFO.WECHATUSER) {
-        this.isEnrolled = this.checkEnrolled()
-        this.isFounder = this.checkIsFounder()
-        this.canCancel = this.checkCanCancel()
-        console.log('mounted this.isEnrolled', this.isEnrolled)
-        this.$vux.loading.hide()
-      } else {
-        if (Date.now() - this.lastFetchTime > 10000) {
-          window.location.href = global.updateUrl(window.location.href)
-        } else {
-          setTimeout(this.checkGlobalPara(), 1000)
-        }
-      }
-    },
+    // checkGlobalPara: function() {
+    //   console.log('checkGlobalPara')
+    //   if (global.ACTIVITYINFO.WECHATUSER) {
+
+    //   } else {
+    //     if (Date.now() - this.lastFetchTime > 10000) {
+    //       window.location.href = global.updateUrl(window.location.href)
+    //     } else {
+    //       setTimeout(this.checkGlobalPara(), 1000)
+    //     }
+    //   }
+    // },
     freshPage: function() {
       if (this.$route.query.activity_id) {
         var app = this
@@ -343,7 +339,39 @@ export default {
               app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
               app.activityDate = global.formatDateToDayAndWeek(app.activityInfo.activityDateTime)
               app.activityTime = global.formatTimeDuring(app.activityInfo)
-              app.checkGlobalPara()
+              app.isEnrolled = app.checkEnrolled()
+              app.isFounder = app.checkIsFounder()
+              app.canCancel = app.checkCanCancel()
+              wx.checkJsApi({
+                jsApiList: ['chooseImage', 'onMenuShareTimeline', 'onMenuShareAppMessage'],
+                success: function(res) {
+                  function shareData(act) {
+                    // title: '微信JS-SDK Demo',
+                    // desc: '读书接龙',
+                    // link: 'https://demo.open.weixin.qq.com/jssdk/',
+                    // imgUrl: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRt8Qia4lv7k3M9J1SKqKCImxJCt7j9rHYicKDI45jRPBxdzdyREWnk0ia0N5TMnMfth7SdxtzMvVgXg/0'
+                    return { // title: 'title', // 分享标题
+                      title: app.activityInfo.activityTitle,
+                      desc: app.activityDate + app.activityInfo.founderNickName + '组织，' + app.activityInfo.activityAddress + '不见不散', // 分享描述
+                      link: location.href,
+                      // imgUrl: imgUrl, // 分享图标
+                      success: function() {
+                        // logAction(act, 'success');
+                        // 用户确认分享后执行的回调函数
+                      },
+                      cancel: function() {
+                        // logAction(act, 'cancel');
+                        // 用户取消分享后执行的回调函数
+                      }
+                    }
+                  };
+                  wx.onMenuShareTimeline(shareData('onMenuShareTimeline'));
+                  wx.onMenuShareAppMessage(shareData('onMenuShareAppMessage'));
+                  wx.onMenuShareQQ(shareData('onMenuShareQQ'));
+                  wx.onMenuShareWeibo(shareData('onMenuShareWeibo'));
+                  wx.onMenuShareQZone(shareData('onMenuShareQZone'));
+                }
+              });
             } else {
               // alert(rev.msg)
               app.$router.push({ name: 'PageActivityApplyList' })
