@@ -1,70 +1,74 @@
 <template>
   <div>
-    <!-- <van-swipe :autoplay="3000" sytle="height:120px">
+    <div class="contentActivity">
+      <!-- <van-swipe :autoplay="3000" sytle="height:120px">
       <van-swipe-item v-for="(image, index) in imageList" :key="index">
         <img v-lazy="image" style="width:100%" />
       </van-swipe-item>
     </van-swipe> -->
-    <img v-lazy="imageTop" style="width:100%" />
-    <van-cell-group>
-      <van-row class='styleActivityTitle'>
-        <van-col span="12"><span class='bigTitle'>{{activityInfo.activityTitle}}</span>
-          <br><span>报名人数：{{enrollStatistics()}}</span>
-        </van-col>
-        <van-col span="12" class='styleActivityTitleRight'>
-          <van-button size="small" v-on:click="routeToApplyList()" type="primary">名单</van-button>
-          <van-button size="small" type="primary">分享</van-button>
-        </van-col>
-      </van-row>
-      <van-row class='styleActivityTitle'>
-        <van-col span="24">
-          活动地点：{{activityInfo.activityAddress}}
-          <br>活动场地：{{activityInfo.activityField}}
-          <br>活动日期：{{activityDate}}
-          <br>活动时间：{{activityTime}}
-          <br>&nbsp;组&nbsp;织&nbsp;者：{{activityInfo.founderNickName}}
-          <br>活动费用：{{displayPrice()}}
-        </van-col>
-      </van-row>
-      <van-row class='styleActivityTitle'>
-        <van-col span="8">
-          活动公告：
-        </van-col>
-        <van-col span="16" v-html='displayNotice()'>
-        </van-col>
-      </van-row>
-      <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
-      <van-button size="large" type="primary" v-on:click="cancelEnroll" v-if="canCancel">取消报名</van-button>
-      <van-button size="large" type="warn" v-on:click="manageApply" v-if="isFounder">{{manageButtonText}}</van-button>
-      <van-button size="large" type="danger" v-on:click="deleteActivity" v-if="isFounder">{{deleteActiviyButtonText}}</van-button>
-    </van-cell-group>
-    <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
+      <img v-lazy="imageTop" style="width:100%" />
+      <van-cell-group>
+        <van-row class='styleActivityTitle'>
+          <van-col span="12"><span class='bigTitle'>{{activityInfo.activityTitle}}</span>
+            <br><span>报名人数：{{enrollStatistics()}}</span>
+          </van-col>
+          <van-col span="12" class='styleActivityTitleRight'>
+            <van-button size="small" v-on:click="routeToApplyList()" type="primary">名单</van-button>
+            <van-button size="small" type="primary">分享</van-button>
+          </van-col>
+        </van-row>
+        <van-row class='styleActivityTitle'>
+          <van-col span="24">
+            活动地点：{{activityInfo.activityAddress}}
+            <br>活动场地：{{activityInfo.activityField}}
+            <br>活动日期：{{activityDate}}
+            <br>活动时间：{{activityTime}}
+            <br>&nbsp;组&nbsp;织&nbsp;者：{{activityInfo.founderNickName}}
+            <br>活动费用：{{displayPrice()}}
+          </van-col>
+        </van-row>
+        <van-row class='styleActivityTitle'>
+          <van-col span="8">
+            活动公告：
+          </van-col>
+          <van-col span="16" v-html='displayNotice()'>
+          </van-col>
+        </van-row>
+        <van-button size="large" type="warn" v-on:click="manageApply" v-if="isFounder">{{manageButtonText}}</van-button>
+        <van-button size="large" type="danger" v-on:click="deleteActivity" v-if="isFounder">{{deleteActiviyButtonText}}</van-button>
+      </van-cell-group>
+      <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
-    <!-- <div v-transfer-dom>
+      <!-- <div v-transfer-dom>
   <confirm v-model="showNickName" show-input ref="confirmNickName" title="显示的昵称" @on-confirm="onConfirmNickName" @on-show="onShowNickName" @on-cancel="" @on-hide="">
   </confirm>
 </div>
  -->
-    <!-- <div v-transfer-dom>
+      <!-- <div v-transfer-dom>
       <confirm v-model="showEnrollNumber
 " show-input :input-attrs="{type: 'number'}" ref="confirmEnrollNumber" title="报名人数" @on-confirm="onConfirmEnrollNumber" @on-show="onShowEnrollNumber">
       </confirm>
     </div> -->
-    <van-dialog v-model="showQrcodeAlert" @confirm="freshPage">
-      <div class="styleDialogTitle">{{qrcodeTitle}}</div>
-      <img height="200px" width="200px" :src='qrcodeSrc' />
-    </van-dialog>
-    <van-dialog v-model="showNickName" @confirm="onConfirmEnrollNickName" show-cancel-button>
-      <div class="styleDialogTitle">请输入活动伙伴认识的名字</div>
-      <van-field v-model="enrollNickName" label="显示昵称" placeholder="请输入在活动中的昵称" />
-    </van-dialog>
-    <van-dialog v-model="showEnrollNumber" @confirm="onConfirmEnrollNumber" show-cancel-button>
-      <div class="styleDialogTitle">请输入报名人数</div>
-      <van-field v-model="enrollNumber" label="报名男生" placeholder="" type='number' />
-      <van-field v-model="enrollNumberFemale" label="报名女生" placeholder="" type='number' />
-    </van-dialog>
-    <!-- <tabbar-activity></tabbar-activity> -->
-    <!-- <tabbar-vant></tabbar-vant> -->
+      <van-dialog v-model="showQrcodeAlert" @confirm="freshPage">
+        <div class="styleDialogTitle">{{qrcodeTitle}}</div>
+        <img height="200px" width="200px" :src='qrcodeSrc' />
+      </van-dialog>
+      <van-dialog v-model="showNickName" @confirm="onConfirmEnrollNickName" show-cancel-button>
+        <div class="styleDialogTitle">请输入活动伙伴认识的名字</div>
+        <van-field v-model="enrollNickName" label="显示昵称" placeholder="请输入在活动中的昵称" />
+      </van-dialog>
+      <van-dialog v-model="showEnrollNumber" @confirm="onConfirmEnrollNumber" show-cancel-button>
+        <div class="styleDialogTitle">请输入报名人数</div>
+        <van-field v-model="enrollNumber" label="报名男生" placeholder="" type='number' />
+        <van-field v-model="enrollNumberFemale" label="报名女生" placeholder="" type='number' />
+      </van-dialog>
+      <!-- <tabbar-activity></tabbar-activity> -->
+      <!-- <tabbar-vant></tabbar-vant> -->
+    </div>
+    <div class="r">
+      <van-button size="large" type="primary" v-on:click="enroll" v-if="!checkEnrolled()">{{enrollButtonText}}</van-button>
+      <van-button size="large" type="danger" v-on:click="cancelEnroll" v-if="canCancel">取消报名</van-button>
+    </div>
   </div>
 </template>
 <script>
@@ -408,6 +412,16 @@ export default {
 .styleDialogTitle {
   text-align: center;
   margin: 10px
+}
+
+.r {
+  width: 100%;
+  position: fixed;
+  bottom: 50px;
+}
+
+.contentActivity {
+  margin-bottom: 50px;
 }
 
 </style>
