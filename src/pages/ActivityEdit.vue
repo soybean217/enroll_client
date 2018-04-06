@@ -182,6 +182,38 @@ export default {
   beforeMount() {
     if (!global.ACTIVITYINFO.WECHATUSER.subscribe) {
       this.$router.push({ name: 'PageQrcodeDefault' })
+    } else {
+      if (this.$route.query.activity_id) {
+        var app = this
+        this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
+          .then(function(response) {
+            var rev = response.data
+            console.log('ajax/getActivity?\n', rev)
+            if (rev.status == 'ok') {
+              if (rev.data.founderUnionId == global.ACTIVITYINFO.WECHATUSER.unionid) {
+                app.founderNickName = rev.data.founderNickName
+                app.activityTitle = rev.data.activityTitle
+                app.spendHours = rev.data.spendHours
+                app.activityAddress = rev.data.activityAddress
+                app.activityField = rev.data.activityField
+                app.enrollPrice = rev.data.enrollPrice
+                app.enrollPriceFemale = rev.data.enrollPriceFemale
+                app.numberMax = rev.data.numberMax
+                app.confirmDayCount = rev.data.confirmDayCount
+                app.enrollAgentSwitch = rev.data.enrollAgentSwitch
+                app.activityConfirmSwitch = rev.data.activityConfirmSwitch
+                app.notifySwitch = rev.data.notifySwitch
+                app.activityNotice = rev.data.activityNotice
+              }
+            } else {
+              // alert(rev.msg)
+              app.$router.push({ name: 'PageActivityApplyList' })
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
     }
   },
 }

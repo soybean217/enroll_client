@@ -34,8 +34,11 @@
           <van-col span="16" v-html='displayNotice()'>
           </van-col>
         </van-row>
-        <van-button size="large" type="warn" v-on:click="manageApply" v-if="isFounder">{{manageButtonText}}</van-button>
-        <van-button size="large" type="danger" v-on:click="deleteActivity" v-if="isFounder">{{deleteActiviyButtonText}}</van-button>
+        <van-row v-if="isFounder">
+          <van-button type="warn" v-on:click="manageApply">{{manageButtonText}}</van-button>
+          <van-button type="danger" v-on:click="deleteActivity">{{deleteActiviyButtonText}}</van-button>
+          <van-button type="primary" v-on:click="copyActivity">复制活动</van-button>
+        </van-row>
       </van-cell-group>
       <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
  -->
@@ -51,7 +54,9 @@
     </div> -->
       <van-dialog v-model="showQrcodeAlert" @confirm="freshPage">
         <div class="styleDialogTitle">{{qrcodeTitle}}</div>
-        <img height="200px" width="200px" :src='qrcodeSrc' />
+        <div class="styleDialogTitle">
+          <img height="200px" width="200px" :src='qrcodeSrc' />
+        </div>
       </van-dialog>
       <van-dialog v-model="showNickName" @confirm="onConfirmEnrollNickName" show-cancel-button>
         <div class="styleDialogTitle">请输入活动伙伴认识的名字</div>
@@ -180,6 +185,9 @@ export default {
           console.log(error);
         });
     },
+    copyActivity() {
+      this.$router.push({ name: 'PageActivityEdit', query: { activity_id: this.$route.query.activity_id, } })
+    },
     enrollActivity() {
       var app = this
       this.$ajax({
@@ -286,7 +294,7 @@ export default {
           console.log('cancelEnroll rsp:', response.data);
           var rev = response.data
           if (rev.status == 'ok') {
-            setTimeout(app.freshPage(), 1000)
+            setTimeout(app.freshPage(), 500)
           } else {
             alert(rev.msg)
           }

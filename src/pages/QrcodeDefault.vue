@@ -1,6 +1,7 @@
 <template>
   <div style="text-align:center">
-    <br>请先关注，才能收到报名的通知消息
+    <div>
+      <br>请先关注，才能收到报名的通知消息</div>
     <img :src="mpQrcode()">
   </div>
 </template>
@@ -11,7 +12,6 @@ export default {
   methods: {
     mpQrcode() {
       return global.ACTIVITYINFO.globalConfig.mpQrcode
-
     },
   },
   mounted() {},
