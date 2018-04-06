@@ -179,6 +179,11 @@ export default {
       this.$router.push({ name: 'PageActivityView', query: { routeParams: 'params', } })
     }
   },
+  beforeMount() {
+    if (!global.ACTIVITYINFO.WECHATUSER.subscribe) {
+      this.$router.push({ name: 'PageQrcodeDefault' })
+    }
+  },
 }
 
 </script>

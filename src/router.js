@@ -81,6 +81,14 @@ const routes = [{
     meta: {
       title: '管理报名'
     }
+  }, {
+    path: '/qrcode_default',
+    name: 'PageQrcodeDefault',
+    component: () =>
+      import ('./pages/QrcodeDefault'),
+    meta: {
+      title: '关注公众号'
+    }
   },
 ];
 
@@ -102,6 +110,7 @@ router.beforeEach((to, from, next) => {
   function defaultProcessForWechat() {
     const title = to.meta && to.meta.title;
     if (title) {
+      console.log('redefine title', title)
       document.title = title;
     }
     wx.checkJsApi({
@@ -168,6 +177,7 @@ router.beforeEach((to, from, next) => {
             });
         }
         global.ACTIVITYINFO.WECHATUSER = rev.wechatUserInfo
+        global.ACTIVITYINFO.globalConfig = rev.globalConfig
         wx.config({
           debug: rev.debug,
           appId: rev.appId,
