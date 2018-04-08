@@ -153,9 +153,9 @@ export default {
     },
     confirmActivity: function(act) {
       this.checkParamsResult = {}
+      console.log('this.checkParams()', this.checkParams())
       if (this.checkParams()) {
         var app = this;
-        console.log(this)
         this.$ajax({
             method: 'post',
             url: 'ajax/createActivity',
@@ -164,9 +164,7 @@ export default {
           .then(function(response) {
             console.log(response);
             var rev = response.data
-            if (act == 'view') {
-              app.$router.push({ name: 'PageActivityView', query: { activity_id: rev.activityId, } })
-            }
+            app.$router.push({ name: 'PageActivityView', query: { activity_id: rev.activityId, } })
           })
           .catch(function(error) {
             console.log(error);
