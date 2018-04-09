@@ -52,12 +52,12 @@
 " show-input :input-attrs="{type: 'number'}" ref="confirmEnrollNumber" title="报名人数" @on-confirm="onConfirmEnrollNumber" @on-show="onShowEnrollNumber">
       </confirm>
     </div> -->
-      <van-dialog v-model="showQrcodeAlert" @confirm="freshPage">
+      <!-- <van-dialog v-model="showQrcodeAlert" @confirm="freshPage">
         <div class="styleDialogTitle">{{qrcodeTitle}}</div>
         <div class="styleDialogTitle">
           <img height="200px" width="200px" :src='qrcodeSrc' />
         </div>
-      </van-dialog>
+      </van-dialog> -->
       <van-dialog v-model="showNickName" @confirm="onConfirmEnrollNickName" show-cancel-button>
         <div class="styleDialogTitle">请输入活动伙伴认识的名字</div>
         <van-field v-model="enrollNickName" label="显示昵称" placeholder="请输入在活动中的昵称" />
@@ -67,6 +67,13 @@
         <van-field v-model="enrollNumber" label="报名男生" placeholder="" type='number' />
         <van-field v-model="enrollNumberFemale" label="报名女生" placeholder="" type='number' />
       </van-dialog>
+      <van-actionsheet v-model="showFollow" title="识别二维码完成报名">
+        <div class="styleDialogTitle">{{qrcodeTitle}}</div>
+        <div class="styleDialogTitle">
+          <img height="200px" width="200px" :src='qrcodeSrc' />
+        </div>
+        <div class="styleDialogTitle">长按上图，识别二维码</div>
+      </van-actionsheet>
       <!-- <tabbar-activity></tabbar-activity> -->
       <!-- <tabbar-vant></tabbar-vant> -->
     </div>
@@ -78,7 +85,7 @@
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog } from 'vant'
+import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog, Actionsheet } from 'vant'
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
@@ -87,6 +94,7 @@ Vue.use(Lazyload)
 
 
 export default {
+  name: 'PageActivityView',
   components: {
     [Stepper.name]: Stepper,
     [Row.name]: Row,
@@ -95,10 +103,10 @@ export default {
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
+    [Actionsheet.name]: Actionsheet,
     // tabbarVant,
     // tabbarActivity,
   },
-  name: 'PageActivityView',
   data() {
     return {
       imageTop: 'http://pic01-1253796884.file.myqcloud.com/badminton/badminton_top_180329.jpg',
@@ -108,7 +116,7 @@ export default {
       isFounder: false,
       showEnrollNumber: false,
       showNickName: false,
-      showQrcodeAlert: false,
+      // showQrcodeAlert: false,
       enrollButtonText: '报名',
       manageButtonText: '管理报名',
       deleteActiviyButtonText: '删除活动',
@@ -125,6 +133,7 @@ export default {
       qrcodeTitle: '扫描二维码报名',
       activityDate: '',
       activityTime: '',
+      showFollow: false,
     }
   },
   methods: {
@@ -160,30 +169,38 @@ export default {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
     },
     deleteActivity() {
-      var app = this
-      this.$ajax({
-          method: 'post',
-          url: 'ajax/delActivity',
-          data: {
-            activity_id: this.$route.query.activity_id,
-          },
-        })
-        .then(function(response) {
-          console.log(response.date);
-          var rev = response.data
-          if (rev.status == 'ok') {
-            app.$router.push({ name: 'PageActivityFoundList' })
-          } else if (rev.msg == 'please delete all other apply') {
-            alert('请先删除所有申请，')
-          } else if (rev.msg) {
-            alert(rev.msg)
-          } else {
-            alert('error data when delActivity')
-          }
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
+      this.$dialog.confirm({
+        title: '确认',
+        message: '删除活动？'
+      }).then(() => {
+        // on confirm
+        var app = this
+        this.$ajax({
+            method: 'post',
+            url: 'ajax/delActivity',
+            data: {
+              activity_id: this.$route.query.activity_id,
+            },
+          })
+          .then(function(response) {
+            console.log(response.date);
+            var rev = response.data
+            if (rev.status == 'ok') {
+              app.$router.push({ name: 'PageActivityFoundList' })
+            } else if (rev.msg == 'please delete all other apply') {
+              alert('请先删除所有申请，')
+            } else if (rev.msg) {
+              alert(rev.msg)
+            } else {
+              alert('error data when delActivity')
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }).catch(() => {
+        // on cancel
+      });
     },
     copyActivity() {
       this.$router.push({ name: 'PageActivityEdit', query: { activity_id: this.$route.query.activity_id, } })
@@ -260,6 +277,7 @@ export default {
         this.showNickName = true;
         this.enrollNickName = global.ACTIVITYINFO.WECHATUSER.nickname
       } else {
+        this.showFollow = true
         var app = this
         this.$ajax({
             method: 'post',
@@ -273,7 +291,7 @@ export default {
             console.log(response);
             var rev = response.data
             app.qrcodeSrc = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + encodeURI(rev.ticket)
-            app.showQrcodeAlert = true
+            // app.showQrcodeAlert = true
           })
           .catch(function(error) {
             console.log(error);
@@ -348,8 +366,9 @@ export default {
             console.log('ajax/getActivity?\n', rev)
             if (rev.status == 'ok') {
               app.activityInfo = rev.data
-              app.qrcodeTitle = '扫描二维码报名“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
               app.activityDate = global.formatDateToDayAndWeek(app.activityInfo.activityDateTime)
+              app.qrcodeTitle = app.activityDate + '“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
+
               app.activityTime = global.formatTimeDuring(app.activityInfo)
               app.isEnrolled = app.checkEnrolled()
               app.isFounder = app.checkIsFounder()
@@ -394,6 +413,13 @@ export default {
           });
       }
     },
+  },
+  watch: {
+    showFollow: function(val) {
+      if (val == false) {
+        window.location.href = global.updateUrl(window.location.href)
+      }
+    }
   },
   mounted() {
     this.freshPage()

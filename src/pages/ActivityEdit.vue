@@ -60,6 +60,7 @@ import { Field, Stepper, Cell, CellGroup, Button, Row, Col, DatetimePicker, Swit
 // import Vuelidation from 'vuelidation';// can not work on wechat PC version
 // Vue.use(Vuelidation);
 export default {
+  name: 'PageActivityEdit',
   components: {
     [Stepper.name]: Stepper,
     [Field.name]: Field,
@@ -71,7 +72,6 @@ export default {
     [DatetimePicker.name]: DatetimePicker,
     [Switch.name]: Switch,
   },
-  name: 'PageActivityEdit',
   data() {
     return {
       founderNickName: '',

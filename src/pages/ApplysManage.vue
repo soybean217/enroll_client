@@ -16,13 +16,13 @@ import { Field, Stepper, Cell, CellGroup, Button, Actionsheet } from 'vant'
 import wx from 'weixin-js-sdk'
 
 export default {
+  name: 'PageApplysManage',
   components: {
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
     [Actionsheet.name]: Actionsheet,
   },
-  name: 'PageApplysManage',
   data() {
     return {
       selectedApply: {},
@@ -70,46 +70,55 @@ export default {
             console.log(error);
           })
       } else if (item.name == '删除') {
-        var app = this
-        this.$ajax({
-            method: 'post',
-            url: 'ajax/delApply',
-            data: {
-              activity_id: this.$route.query.activity_id,
-              applyId: this.selectedApply._id,
-            },
-          })
-          .then(function(response) {
-            console.log(response.data);
-            if (response.data.status != 'ok') {
-              alert('please retry or report , page will refresh because of :' + JSON.stringify(response.data));
-            }
-            if (response.data.type && response.data.type == 'unifiedOrder') {
-              wx.checkJsApi({
-                jsApiList: ['chooseWXPay'],
-                success: function(res) {
-                  var unifiedOrderData = response.data.data
-                  unifiedOrderData.success = function(res) {
-                    // alert(JSON.stringify(res));
-                    //{"errMsg":"chooseWXPay:ok"}
-                    if (res.errMsg == "chooseWXPay:ok") {
-                      alert('支付成功');
-                      app.freshPage()
-                    } else {
-                      alert(JSON.stringify(res))
+        this.$dialog.confirm({
+          title: '确认',
+          message: '删除' + this.selectedApply.displayNickName + '的申请？'
+        }).then(() => {
+          // on confirm
+          var app = this
+          this.$ajax({
+              method: 'post',
+              url: 'ajax/delApply',
+              data: {
+                activity_id: this.$route.query.activity_id,
+                applyId: this.selectedApply._id,
+              },
+            })
+            .then(function(response) {
+              console.log(response.data);
+              if (response.data.status != 'ok') {
+                alert('please retry or report , page will refresh because of :' + JSON.stringify(response.data));
+              }
+              if (response.data.type && response.data.type == 'unifiedOrder') {
+                wx.checkJsApi({
+                  jsApiList: ['chooseWXPay'],
+                  success: function(res) {
+                    var unifiedOrderData = response.data.data
+                    unifiedOrderData.success = function(res) {
+                      // alert(JSON.stringify(res));
+                      //{"errMsg":"chooseWXPay:ok"}
+                      if (res.errMsg == "chooseWXPay:ok") {
+                        alert('支付成功');
+                        app.freshPage()
+                      } else {
+                        alert(JSON.stringify(res))
+                      }
                     }
+                    console.log('unifiedOrderData', unifiedOrderData)
+                    wx.chooseWXPay(unifiedOrderData)
                   }
-                  console.log('unifiedOrderData', unifiedOrderData)
-                  wx.chooseWXPay(unifiedOrderData)
-                }
-              });
-            } else {
-              app.freshPage()
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          })
+                });
+              } else {
+                app.freshPage()
+              }
+            })
+            .catch(function(error) {
+              console.log(error);
+            })
+        }).catch(() => {
+          // on cancel
+        });
+
       }
     },
     actText(apply) {
@@ -132,7 +141,7 @@ export default {
         if (apply.status == 'wait') {
           this.actions = [{
               name: '确认',
-              callback: this.clickTest
+              callback: this.click
             },
             {
               name: delTitle,
