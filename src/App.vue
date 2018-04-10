@@ -7,8 +7,8 @@
     </keep-alive>
     <van-tabbar v-model="active">
       <van-tabbar-item icon="home" to="/">首页</van-tabbar-item>
-      <van-tabbar-item icon="clock" to="activity_apply_list">参加</van-tabbar-item>
-      <van-tabbar-item icon="edit" to="activity_found_list">发起</van-tabbar-item>
+      <van-tabbar-item icon="clock" to="activity_apply_list">已报名的</van-tabbar-item>
+      <van-tabbar-item icon="edit" to="activity_found_list">我发起的</van-tabbar-item>
       <van-tabbar-item icon="contact">我的</van-tabbar-item>
     </van-tabbar>
   </div>

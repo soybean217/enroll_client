@@ -1,11 +1,6 @@
 <template>
   <div>
     <div class="contentActivity">
-      <!-- <van-swipe :autoplay="3000" sytle="height:120px">
-      <van-swipe-item v-for="(image, index) in imageList" :key="index">
-        <img v-lazy="image" style="width:100%" />
-      </van-swipe-item>
-    </van-swipe> -->
       <img v-lazy="imageTop" style="width:100%" />
       <van-cell-group>
         <van-row class='styleActivityTitle'>
@@ -109,8 +104,7 @@ export default {
   },
   data() {
     return {
-      imageTop: 'http://pic01-1253796884.file.myqcloud.com/badminton/badminton_top_180329.jpg',
-      imageList: ['http://pic01-1253796884.file.myqcloud.com/badminton/badminton_top_180329.jpg'],
+      imageTop: 'http://pic01-1253796995.file.myqcloud.com/badminton/badminton_top_180329.jpg',
       isEnrolled: false,
       canCancel: false,
       isFounder: false,
@@ -299,27 +293,33 @@ export default {
       }
     },
     cancelEnroll: function() {
-      // if (false) {
-      var app = this
-      this.$ajax({
-          method: 'post',
-          url: 'ajax/cancelEnrollByCustomer',
-          data: {
-            activityId: this.$route.query.activity_id,
-          },
-        })
-        .then(function(response) {
-          console.log('cancelEnroll rsp:', response.data);
-          var rev = response.data
-          if (rev.status == 'ok') {
-            setTimeout(app.freshPage(), 500)
-          } else {
-            alert(rev.msg)
-          }
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
+      this.$dialog.confirm({
+        title: '确认',
+        message: '是否取消报名？'
+      }).then(() => {
+        var app = this
+        this.$ajax({
+            method: 'post',
+            url: 'ajax/cancelEnrollByCustomer',
+            data: {
+              activityId: this.$route.query.activity_id,
+            },
+          })
+          .then(function(response) {
+            console.log('cancelEnroll rsp:', response.data);
+            var rev = response.data
+            if (rev.status == 'ok') {
+              app.freshPage()
+            } else {
+              alert(rev.msg)
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }).catch(() => {
+        // on cancel
+      });
     },
     checkCanCancel: function() {
       if (this.checkIsFounder()) {
@@ -385,7 +385,7 @@ export default {
                       title: app.activityInfo.activityTitle,
                       desc: app.activityDate + app.activityInfo.founderNickName + '组织，' + app.activityInfo.activityAddress + '不见不散', // 分享描述
                       link: location.href,
-                      // imgUrl: imgUrl, // 分享图标
+                      imgUrl: 'http://pic01-1253796995.image.myqcloud.com/badminton/badminton_top_180329_for_image.jpg?imageView2/1/w/80', // 分享图标
                       success: function() {
                         // logAction(act, 'success');
                         // 用户确认分享后执行的回调函数
