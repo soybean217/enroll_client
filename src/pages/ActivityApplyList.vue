@@ -3,9 +3,7 @@
     <van-collapse v-model="activeNames">
       <van-collapse-item v-for="activity in activitys" :title="formatTitle(activity)" :key="activity._id" :name="activity._id">
         <div v-on:click="goToActivity(activity)">
-          组织者：{{activity.founderNickName}}
-          <br> 活动时间：
-          <br>
+          <activity-simple-item :activity='activity'></activity-simple-item>
         </div>
       </van-collapse-item>
     </van-collapse>
@@ -14,15 +12,17 @@
 <script>
 import Vue from 'vue'
 import { Collapse, CollapseItem, Button } from 'vant'
+import activitySimpleItem from '../components/activity-simple-item'
 Vue.use(Collapse).use(CollapseItem)
 
 export default {
+  name: 'PageActivityApplyList',
   components: {
     [Collapse.name]: Collapse,
     [CollapseItem.name]: CollapseItem,
     [Button.name]: Button,
+    activitySimpleItem,
   },
-  name: 'PageActivityApplyList',
   data() {
     return {
       activeNames: [],

@@ -4,9 +4,7 @@
     <van-collapse v-model="activeNames" v-if='!isLoading'>
       <van-collapse-item v-for="activity in activitys" :title="formatTitle(activity)" :key="activity._id" :name="activity._id">
         <div v-on:click="goToActivity(activity)">
-          组织者：{{activity.founderNickName}}
-          <br> 活动时间：
-          <br>
+          <activity-simple-item :activity='activity'></activity-simple-item>
         </div>
       </van-collapse-item>
     </van-collapse>
@@ -16,19 +14,20 @@
 import Vue from 'vue'
 import { Collapse, CollapseItem, Button, Loading } from 'vant'
 // import { Loading, LoadingPlugin, TransferDomDirective as TransferDom } from 'vux'
+import activitySimpleItem from '../components/activity-simple-item'
 Vue.use(Collapse).use(CollapseItem).use(Loading)
 
 export default {
   // directives: { // TransferDom // },
-
+  name: 'PageActivityFoundList',
   components: {
     [Collapse.name]: Collapse,
     [CollapseItem.name]: CollapseItem,
     [Button.name]: Button,
     [Loading.name]: Loading,
+    activitySimpleItem,
     // Loading,
   },
-  name: 'PageActivityFoundList',
   data() {
     return {
       activeNames: [],
