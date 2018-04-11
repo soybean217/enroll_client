@@ -15,14 +15,16 @@
         <van-row class='styleActivityTitle'>
           <van-col span="24">
             活动地点：{{activityInfo.activityAddress}}
-            <br>活动场地：{{activityInfo.activityField}}
-            <br>活动日期：{{activityDate}}
+            <br>
+            <span v-if="activityInfo.activityField">活动场地：{{activityInfo.activityField}}
+            <br>
+          </span> 活动日期：{{activityDate}}
             <br>活动时间：{{activityTime}}
             <br>&nbsp;组&nbsp;织&nbsp;者：{{activityInfo.founderNickName}}
             <br>活动费用：{{displayPrice()}}
           </van-col>
         </van-row>
-        <van-row class='styleActivityTitle'>
+        <van-row class='styleActivityTitle' v-if="activityInfo.activityNotice">
           <van-col span="8">
             活动公告：
           </van-col>

@@ -1,7 +1,12 @@
 <template>
   <div>
-    <div style="height:60px;margin-bottom: 20px;margin: 30px;font-size: 200%;text-align: center;">{{activityInfo.activityTitle}}
-      <br>人员名单</div>
+    <div style="height:60px;margin-bottom: 20px;margin: 30px;font-size: 200%;text-align: center;">
+      {{activityInfo.activityTitle}}
+      <br>人员名单
+    </div>
+    <div>
+      <van-button size="large" type="primary" v-on:click="manageApply" v-if="checkIsFounder()">管理报名</van-button>
+    </div>
     <van-cell-group>
       <van-cell v-for="apply in activityInfo.applys" v-if="apply.status=='pass'" :title="displayTitle(apply)" :icon="displayIcon(apply)" :value="displayAgent(apply)" :key="apply" />
     </van-cell-group>
@@ -30,6 +35,15 @@ export default {
     }
   },
   methods: {
+    checkIsFounder() {
+      if (global.ACTIVITYINFO.WECHATUSER.unionid == this.activityInfo.founderUnionId) {
+        return true
+      }
+      return false
+    },
+    manageApply() {
+      this.$router.push({ name: 'PageApplysManage', query: { activity_id: this.activityInfo._id, } })
+    },
     displayTitle(apply) {
       return apply.seq + ' . ' + apply.displayNickName
     },
