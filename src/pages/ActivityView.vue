@@ -5,11 +5,11 @@
       <van-cell-group>
         <van-row class='styleActivityTitle'>
           <van-col span="12"><span class='bigTitle'>{{activityInfo.activityTitle}}</span>
-            <br><span>报名人数：{{enrollStatistics()}}</span>
+            <br><span>报名人数：{{enrollStatisticsText()}}</span>
           </van-col>
           <van-col span="12" class='styleActivityTitleRight'>
             <van-button size="small" v-on:click="routeToApplyList()" type="primary">名单</van-button>
-            <van-button size="small" type="primary">分享</van-button>
+            <van-button size="small" v-on:click="showShareAction()" type="primary">分享</van-button>
           </van-col>
         </van-row>
         <van-row class='styleActivityTitle'>
@@ -64,6 +64,9 @@
         <van-field v-model="enrollNumber" label="报名男生" placeholder="" type='number' />
         <van-field v-model="enrollNumberFemale" label="报名女生" placeholder="" type='number' />
       </van-dialog>
+      <!-- <van-dialog v-model="showTextShare" @confirm="onConfirmEnrollNumber" confirmButtonText="复制文字">
+        <van-field v-model="textShare" label="" type="textarea" :autosize="{ maxHeight: 300, minHeight: 50 }" />
+      </van-dialog> -->
       <van-actionsheet v-model="showFollow" title="识别二维码完成报名">
         <div class="styleDialogTitle">{{qrcodeTitle}}</div>
         <div class="styleDialogTitle">
@@ -71,6 +74,13 @@
         </div>
         <div class="styleDialogTitle">长按上图，识别二维码</div>
       </van-actionsheet>
+      <van-actionsheet v-model="showShareText" title="文字分享">
+        <van-field v-model="textShare" id="foo" label="" type="textarea" :autosize="{ maxHeight: 300, minHeight: 50 }" />
+        <div style="text-align:center">
+          <van-button type="primary" class="btn" data-clipboard-target="#foo">复制文字</van-button>
+        </div>
+      </van-actionsheet>
+      <van-actionsheet v-model="showShare" :actions="shareActions" cancel-text="取消" />
       <!-- <tabbar-activity></tabbar-activity> -->
       <!-- <tabbar-vant></tabbar-vant> -->
     </div>
@@ -86,9 +96,9 @@ import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog, Ac
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
+import Clipboard from 'clipboard';
 Vue.use(Dialog);
 Vue.use(Lazyload)
-
 
 export default {
   name: 'PageActivityView',
@@ -106,12 +116,16 @@ export default {
   },
   data() {
     return {
+      textAreaSize: { maxHeight: 100, minHeight: 50 },
       imageTop: 'http://pic01-1253796995.file.myqcloud.com/badminton/badminton_top_180329.jpg',
       isEnrolled: false,
       canCancel: false,
       isFounder: false,
+      showShare: false,
       showEnrollNumber: false,
       showNickName: false,
+      // showTextShare: false,
+      showShareText: false,
       // showQrcodeAlert: false,
       enrollButtonText: '报名',
       manageButtonText: '管理报名',
@@ -129,10 +143,65 @@ export default {
       qrcodeTitle: '扫描二维码报名',
       activityDate: '',
       activityTime: '',
+      textShare: '',
       showFollow: false,
+      shareActions: [{
+          name: '微信分享',
+          subname: '点击右上角 ···',
+        },
+        {
+          name: '文字分享',
+          subname: '可复制到微信聊天',
+          callback: this.openTextShare,
+        }
+      ]
     }
   },
   methods: {
+    procTextShare() {
+      this.textShare = global.formatDateToDayAndWeek(this.activityInfo.activityDateTime) + '\n'
+      this.textShare += global.formatTimeDuring(this.activityInfo) + '\n'
+      this.textShare += this.activityInfo.activityAddress + '\n'
+      if (this.activityInfo.activityField) {
+        this.textShare += this.activityInfo.activityField + '\n'
+      }
+      this.textShare += this.activityInfo.founderNickName + ' 组织的 ' + this.activityInfo.activityTitle + '\n'
+      this.textShare += '费用：' + this.displayPrice() + '\n'
+      if (this.activityInfo.activityNotice) {
+        this.textShare += this.activityInfo.activityNotice + '\n'
+      }
+      this.textShare += '报名情况：' + this.enrollStatisticsText() + '\n'
+      var current = 1
+      var count = this.enrollStatistics()
+      var totalLength = String(count).length
+      for (var apply of this.activityInfo.applys) {
+        if (apply.status == 'pass') {
+          this.textShare += this.addZero(totalLength, current) + '.' + apply.displayNickName + '\n'
+          current++
+          for (var i = 1; i < parseInt(apply.enrollNumber + apply.enrollNumberFemale); i++) {
+            this.textShare += this.addZero(totalLength, current) + '.' + apply.displayNickName + '+' + i + '\n'
+            current++
+          }
+        }
+      }
+      this.textShare += '报名地址：' + location.href
+    },
+    addZero(totalLength, input) {
+      var tmp = String(input)
+      var result = ''
+      for (var i = tmp.length; i < totalLength; i++) {
+        result += '0'
+      }
+      return result + tmp
+    },
+    openTextShare() {
+      this.showShare = false
+      this.procTextShare()
+      this.showShareText = true
+    },
+    showShareAction() {
+      this.showShare = true
+    },
     routeToApplyList() {
       this.$router.push({ name: 'PageApplysList', query: { activity_id: this.$route.query.activity_id, } })
     },
@@ -143,7 +212,10 @@ export default {
           result += parseInt(apply.enrollNumber + apply.enrollNumberFemale)
         }
       }
-      return result + '/' + this.activityInfo.numberMax
+      return result
+    },
+    enrollStatisticsText() {
+      return this.enrollStatistics() + '/' + this.activityInfo.numberMax
     },
     displayPrice() {
       if (this.activityInfo.enrollPrice > 0 && this.activityInfo.enrollPriceFemale > 0) {
@@ -158,8 +230,6 @@ export default {
       } else {
         return ''
       }
-
-      // return this.activityInfo.activityNotice
     },
     procHeadImg: function(imgUrl) {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
@@ -424,6 +494,19 @@ export default {
     }
   },
   mounted() {
+    const clipboard = new Clipboard('.btn');
+    var app = this
+    clipboard.on('success', function(e) {
+      console.info('Action:', e.action);
+      console.info('Text:', e.text);
+      console.info('Trigger:', e.trigger);
+      e.clearSelection();
+      app.$dialog.alert({
+        message: '复制成功'
+      }).then(() => {
+        // on close
+      });
+    });
     this.freshPage()
   },
   beforeMount() {},
