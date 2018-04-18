@@ -11,7 +11,7 @@ export default {
   name: 'PageQrcodeDefault',
   methods: {
     mpQrcode() {
-      return global.ACTIVITYINFO.globalConfig.mpQrcode
+      return global.ACTIVITYINFO.globalConfig.thumbnailsDomain + global.ACTIVITYINFO.globalConfig.mpQrcode
     },
   },
   mounted() {},

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "clipboard": "^2.0.0",
-    "vant": "^1.0.2",
+    "vant": "^1.0.7",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",
     "vux": "^2.8.1",

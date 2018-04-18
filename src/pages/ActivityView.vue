@@ -35,6 +35,7 @@
           <van-button type="warn" v-on:click="manageApply">{{manageButtonText}}</van-button>
           <van-button type="danger" v-on:click="deleteActivity">{{deleteActiviyButtonText}}</van-button>
           <van-button type="primary" v-on:click="copyActivity">复制活动</van-button>
+          <van-button type="primary" v-on:click="editCover">修改封面</van-button>
         </van-row>
       </van-cell-group>
       <!-- <van-datetime-picker v-model="currentDate" type="datetime" :min-hour="minHour" :max-hour="maxHour" :min-date="minDate" :max-date="maxDate" />
@@ -92,7 +93,7 @@
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog, Actionsheet } from 'vant'
+import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog, Actionsheet, Toast } from 'vant'
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
@@ -111,6 +112,7 @@ export default {
     [CellGroup.name]: CellGroup,
     [Button.name]: Button,
     [Actionsheet.name]: Actionsheet,
+    [Toast.name]: Toast,
     // tabbarVant,
     // tabbarActivity,
   },
@@ -219,9 +221,13 @@ export default {
     },
     displayPrice() {
       if (this.activityInfo.enrollPrice > 0 && this.activityInfo.enrollPriceFemale > 0) {
-        return '男' + this.activityInfo.enrollPrice + '元，女' + this.activityInfo.enrollPriceFemale + '元'
+        return '男生' + this.activityInfo.enrollPrice + '元，女生' + this.activityInfo.enrollPriceFemale + '元'
       } else if (this.activityInfo.enrollPrice == 0 && this.activityInfo.enrollPriceFemale == 0) {
         return '免费'
+      } else if (this.activityInfo.enrollPrice > 0 && this.activityInfo.enrollPriceFemale == 0) {
+        return '男生' + this.activityInfo.enrollPrice + '元，女生免费'
+      } else if (this.activityInfo.enrollPrice == 0 && this.activityInfo.enrollPriceFemale > 0) {
+        return '女生' + this.activityInfo.enrollPriceFemale + '元，男生免费'
       }
     },
     displayNotice() {
@@ -233,6 +239,83 @@ export default {
     },
     procHeadImg: function(imgUrl) {
       return imgUrl.substr(0, imgUrl.lastIndexOf('/') + 1) + global.CONFIG.HEAD_ICON_REAL_RESOLUTION
+    },
+    editCover() {
+      var images = {
+        localId: [],
+        serverId: []
+      };
+      var app = this
+      wx.checkJsApi({
+        jsApiList: ['chooseImage', 'uploadImage'],
+        fail: function() {
+          alert('checkJsApi fail', arguments)
+        },
+        success: function(res) {
+          wx.chooseImage({
+            count: 1, // 默认9
+            sizeType: ['compressed'], // 可以指定是原图还是压缩图，默认二者都有
+            sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+            success: function(res) {
+              app.$toast.loading({
+                forbidClick: true,
+                mask: true,
+                message: '上传中...',
+                duration: 0
+              });
+              images.localId = res.localIds;
+              var i = 0,
+                length = images.localId.length;
+              images.serverId = [];
+
+              function upload() {
+                wx.uploadImage({
+                  localId: images.localId[i],
+                  success: function(res) {
+                    i++;
+                    // alert('已上传：' + i + '/' + length);
+                    images.serverId.push(res.serverId);
+                    if (i < length) {
+                      upload();
+                    } else {
+                      app.$ajax({
+                          method: 'post',
+                          url: "ajax/picUploadAjax?act=cover&activityId=" + app.activityInfo._id,
+                          data: images,
+                        })
+                        .then(function(response) {
+                          console.log(response.data);
+                          var rev = response.data;
+                          if (rev.status == 'ok') {
+                            app.$toast.clear();
+                            app.freshPage()
+                          } else {
+                            console.log(rev)
+                            alert(JSON.stringify(rev))
+                            app.$toast.clear();
+                          }
+                        })
+                        .catch(function(error) {
+                          console.log(error);
+                          alert(JSON.stringify(status));
+                          alert(JSON.stringify(xhr));
+                          alert('error,请关闭重新进入');
+                          app.$toast.clear();
+                        });
+                    }
+                  },
+                  fail: function(res) {
+                    alert(JSON.stringify(res));
+                    Toast.clear();
+                  }
+                });
+              }
+              upload();
+            }
+          });
+        }
+      });
+
     },
     deleteActivity() {
       this.$dialog.confirm({
@@ -307,6 +390,12 @@ export default {
             });
           } else if (rev.status = 'ok') {
             app.freshPage()
+          } else if (rev.status = 'error') {
+            app.$dialog.alert({
+              message: rev.msg
+            }).then(() => {
+              // on close
+            });
           }
         })
         .catch(function(error) {
@@ -336,12 +425,37 @@ export default {
     manageApply: function() {
       this.$router.push({ name: 'PageApplysManage', query: { activity_id: this.activityInfo._id, } })
     },
+    checkEnrollAvailable() {
+      if (this.enrollStatistics() >= this.activityInfo.numberMax) {
+        return '人数超限'
+      } else if (this.checkOverTime()) {
+        return '活动已过期'
+      } else {
+        return ''
+      }
+    },
+    checkOverTime() {
+      var activityBeginDate = new Date(this.activityInfo.activityDateTime)
+      if (activityBeginDate.getTime() + 1000 * 3600 * this.activityInfo.spendHours < Date.now()) {
+        return true
+      } else {
+        return false
+      }
+    },
     enroll() {
-      // if (false) {
-      console.log(global.ACTIVITYINFO.WECHATUSER)
       if (global.ACTIVITYINFO.WECHATUSER.subscribe) {
-        this.showNickName = true;
-        this.enrollNickName = global.ACTIVITYINFO.WECHATUSER.nickname
+        var resultCheckEnrollAvailable = this.checkEnrollAvailable()
+        console.log('resultCheckEnrollAvailable', resultCheckEnrollAvailable)
+        if (resultCheckEnrollAvailable) {
+          this.$dialog.alert({
+            message: resultCheckEnrollAvailable
+          }).then(() => {
+            // on close
+          });
+        } else {
+          this.showNickName = true;
+          this.enrollNickName = global.ACTIVITYINFO.WECHATUSER.nickname
+        }
       } else {
         this.showFollow = true
         var app = this
@@ -432,6 +546,12 @@ export default {
     freshPage: function() {
       if (this.$route.query.activity_id) {
         var app = this
+        app.$toast.loading({
+          forbidClick: true,
+          mask: true,
+          message: '加载中...',
+          duration: 0
+        });
         this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
           .then(function(response) {
             var rev = response.data
@@ -440,13 +560,21 @@ export default {
               app.activityInfo = rev.data
               app.activityDate = global.formatDateToDayAndWeek(app.activityInfo.activityDateTime)
               app.qrcodeTitle = app.activityDate + '“' + app.activityInfo.founderNickName + '”组织的' + app.activityInfo.activityTitle
-
               app.activityTime = global.formatTimeDuring(app.activityInfo)
               app.isEnrolled = app.checkEnrolled()
               app.isFounder = app.checkIsFounder()
               app.canCancel = app.checkCanCancel()
+              if (app.activityInfo.cover) {
+                app.imageTop = global.ACTIVITYINFO.globalConfig.thumbnailsDomain + app.activityInfo.cover
+              }
+              // app.$toast.loading({
+              //   forbidClick: false,
+              //   mask: false,
+              //   duration: 1
+              // })
+              app.$toast.clear();
               wx.checkJsApi({
-                jsApiList: ['chooseImage', 'onMenuShareTimeline', 'onMenuShareAppMessage'],
+                jsApiList: ['onMenuShareTimeline', 'onMenuShareAppMessage'],
                 success: function(res) {
                   function shareData(act) {
                     // title: '微信JS-SDK Demo',
@@ -457,7 +585,8 @@ export default {
                       title: app.activityInfo.activityTitle,
                       desc: app.activityDate + app.activityInfo.founderNickName + '组织，' + app.activityInfo.activityAddress + '不见不散', // 分享描述
                       link: location.href,
-                      imgUrl: 'http://pic01-1253796995.image.myqcloud.com/badminton/badminton_top_180329_for_image.jpg?imageView2/1/w/80', // 分享图标
+                      // imgUrl: app.imageTop + '?imageView2/1/w/80', 
+                      imgUrl: app.imageTop,
                       success: function() {
                         // logAction(act, 'success');
                         // 用户确认分享后执行的回调函数
