@@ -1,7 +1,7 @@
 <template>
   <div>
     <van-cell-group>
-      <van-cell v-for="apply in activityInfo.applys" :title="apply.displayNickName" v-on:click="select(apply)" :value="actText(apply)" :key="apply._id" />
+      <van-cell v-for="apply in activityInfo.applys" :title="displayTitle(apply)" v-on:click="select(apply)" :value="actText(apply)" :key="apply._id" />
     </van-cell-group>
     <!-- <actionsheet v-model="showMenu" :menus="menuContent" theme="android" @on-click-menu="click">
     </actionsheet> -->
@@ -12,8 +12,9 @@
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Stepper, Cell, CellGroup, Button, Actionsheet } from 'vant'
+import { Field, Stepper, Cell, CellGroup, Button, Dialog, Actionsheet } from 'vant'
 import wx from 'weixin-js-sdk'
+Vue.use(Dialog);
 
 export default {
   name: 'PageApplysManage',
@@ -48,6 +49,15 @@ export default {
     }
   },
   methods: {
+    displayTitle(apply) {
+      if ((parseInt(apply.enrollNumber) + parseInt(apply.enrollNumberFemale)) > 1) {
+        return apply.displayNickName + '(' + (apply.enrollNumber >= 1 ? apply.enrollNumber + '男' : '') + (apply.enrollNumberFemale >= 1 ? apply.enrollNumberFemale + '女' : '') + ((apply.enrollNumber > 1 && apply.enrollNumberFemale > 1) ? '共' + (parseInt(apply.enrollNumber) + parseInt(apply.enrollNumberFemale)) + '人' : '') +
+          ')'
+      } else {
+        return apply.displayNickName + '(' + (apply.enrollNumber >= 1 ? '男' : '') + (apply.enrollNumberFemale >= 1 ? '女' : '') + ')'
+      }
+
+    },
     click(item) {
       if (item.name == '确认') {
         var app = this
@@ -169,7 +179,9 @@ export default {
         this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
           .then(function(response) {
             var rev = response.data
-            console.log('ajax/getActivity?\n', rev)
+            if (global.ACTIVITYINFO.WECHATUSER.unionid != rev.data.founderUnionId) {
+              app.$router.push({ name: 'PageActivityView', query: { activity_id: app.$route.query.activity_id, } })
+            }
             app.activityInfo = rev.data
           })
           .catch(function(error) {
@@ -178,9 +190,7 @@ export default {
       }
     },
   },
-  mounted() {
-    console.log(window.location.href)
-  },
+  mounted() {},
   beforeMount() {
     this.freshPage()
   },

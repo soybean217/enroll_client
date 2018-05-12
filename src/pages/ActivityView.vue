@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="contentActivity">
-      <img v-lazy="imageTop" style="width:100%" />
+      <img :src="imageTop" style="width:100%" />
       <van-cell-group>
         <van-row class='styleActivityTitle'>
           <van-col span="12"><span class='bigTitle'>{{activityInfo.activityTitle}}</span>
@@ -93,13 +93,12 @@
 </template>
 <script>
 import Vue from 'vue'
-import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Lazyload, Dialog, Actionsheet, Toast } from 'vant'
+import { Field, Row, Col, Stepper, Cell, CellGroup, Button, Dialog, Actionsheet, Toast } from 'vant'
 // import tabbarActivity from '../components/tabbar-activity'
 // import tabbarVant from '../components/tabbar-vant'
 import wx from 'weixin-js-sdk'
 import Clipboard from 'clipboard';
 Vue.use(Dialog);
-Vue.use(Lazyload)
 
 export default {
   name: 'PageActivityView',

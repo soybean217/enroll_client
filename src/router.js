@@ -86,8 +86,9 @@ const router = new Router({ routes });
 router.beforeEach((to, from, next) => {
   function defaultProcessForWechat() {
     const title = to.meta && to.meta.title;
-    if (title) {
-      console.log('redefine title', title)
+    if (global.ACTIVITYINFO && global.ACTIVITYINFO.globalConfig && global.ACTIVITYINFO.globalConfig.defaultTitle) {
+      document.title = global.ACTIVITYINFO.globalConfig.defaultTitle;
+    } else if (title) {
       document.title = title;
     }
     wx.checkJsApi({
