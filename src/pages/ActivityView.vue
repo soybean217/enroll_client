@@ -377,8 +377,20 @@ export default {
                   // alert(JSON.stringify(res));
                   //{"errMsg":"chooseWXPay:ok"}
                   if (res.errMsg == "chooseWXPay:ok") {
-                    alert('支付成功');
-                    app.freshPage()
+                    // alert('支付成功');
+                    if (app.activityInfo.activityConfirmSwitch) {
+                      app.$dialog.alert({
+                        message: '支付成功，等待审核'
+                      }).then(() => {
+                        // on close
+                      });
+                    } else {
+                      app.$dialog.alert({
+                        message: '支付成功'
+                      }).then(() => {
+                        app.$router.push({ name: 'PageApplysList', query: { activity_id: app.$route.query.activity_id, } })
+                      });
+                    }
                   } else {
                     alert(JSON.stringify(res))
                   }

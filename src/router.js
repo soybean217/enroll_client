@@ -66,7 +66,7 @@ const routes = [{
     meta: {
       title: '关注公众号'
     }
-  },
+  }
 ];
 
 // add route path
