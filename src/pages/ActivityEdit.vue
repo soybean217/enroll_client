@@ -186,7 +186,6 @@ export default {
         this.$ajax.get("ajax/getActivity?activity_id=" + this.$route.query.activity_id)
           .then(function(response) {
             var rev = response.data
-            console.log('ajax/getActivity?\n', rev)
             if (rev.status == 'ok') {
               if (rev.data.founderUnionId == global.ACTIVITYINFO.WECHATUSER.unionid) {
                 app.founderNickName = rev.data.founderNickName
@@ -203,7 +202,6 @@ export default {
                 app.notifySwitch = rev.data.notifySwitch
                 app.activityNotice = rev.data.activityNotice
                 let tmpDate = new Date(rev.data.activityDateTime)
-                console.log('typeof(rev.data.activityDateTime)', typeof(rev.data.activityDateTime), rev.data.activityDateTime, tmpDate)
                 for (let i = 0; i <= 99; i++) {
                   let sameWeekTime = tmpDate.getTime() + i * 7 * 24 * 60 * 60 * 1000
                   if (sameWeekTime > Date.now()) {
@@ -211,7 +209,6 @@ export default {
                     break
                   }
                 }
-                console.log('activityDateTime', rev.data.activityDateTime)
               }
             } else {
               // alert(rev.msg)
