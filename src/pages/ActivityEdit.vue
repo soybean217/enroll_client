@@ -93,7 +93,8 @@ export default {
       alternateSwitch: false,
       notifySwitch: true,
       enrollPriceAlert: false,
-      checkParamsResult: {}
+      checkParamsResult: {},
+      cover: null
     }
   },
   // vuelidation: { // data: { // founderNickName: { // required: true, // }, // activityTitle: { // required: true, // }, // activityDateTime: { // required: true, // }, // activityAddress: { // required: true, // }, // }, // },
@@ -201,6 +202,7 @@ export default {
                 app.activityConfirmSwitch = rev.data.activityConfirmSwitch
                 app.notifySwitch = rev.data.notifySwitch
                 app.activityNotice = rev.data.activityNotice
+                app.cover = rev.data.cover
                 let tmpDate = new Date(rev.data.activityDateTime)
                 for (let i = 0; i <= 99; i++) {
                   let sameWeekTime = tmpDate.getTime() + i * 7 * 24 * 60 * 60 * 1000
